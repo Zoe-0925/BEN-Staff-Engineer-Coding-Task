@@ -27,6 +27,5 @@ export function validateField(field: Field, value: FieldValue): string | undefin
     return isInvalid ? field.validation.errorMessage : undefined;
   }
 
-  const isValidOption = field.options?.some((option) => option.value === value) ?? false;
-  return isValidOption ? undefined : field.validation.errorMessage;
+  return undefined;
 }

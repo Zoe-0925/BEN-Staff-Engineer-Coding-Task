@@ -6,8 +6,8 @@ import type { FormConfig } from '../schemas/FormConfig';
 export function useConfig(formContext: string): FormConfig | undefined {
   const formConfigs = useContext(ConfigContext);
 
-  if (formConfigs === undefined) {
-    throw new Error('useConfig must be used within ConfigProvider');
+  if (!formConfigs) {
+    return undefined;
   }
 
   return formConfigs.find((formConfig) => formConfig.formContext === formContext);

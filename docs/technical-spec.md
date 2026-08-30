@@ -292,7 +292,6 @@ import type { SelectOption } from "./SelectOption";
 import type { Validation } from "./Validation";
 
 export type Field = {
-  type: "Input" | "Select";
   name: string;
   label: string;
   width: {
@@ -301,16 +300,23 @@ export type Field = {
   };
   isRequired: boolean;
   requiredErrorMessage: string;
-  validation: Validation;
-  prefix?: string;
-  suffix?: string;
-  placeholder?: string;
-  options?: SelectOption[];
-};
+} & (
+  | {
+      type: "Input";
+      validation: Validation;
+      prefix?: string;
+      suffix?: string;
+    }
+  | {
+      type: "Select";
+      placeholder?: string;
+      options: SelectOption[];
+    }
+);
 ```
 
-- Input uses optional `prefix` and `suffix` presentation metadata.
-- Select uses `placeholder` and `options`.
+- Input requires validation metadata and uses optional `prefix` and `suffix` presentation metadata.
+- Select uses `placeholder` and required `options`; it performs required validation only.
 - `type` is the discriminant used by the Page switch statement; do not create `FieldType.ts`.
 - `name` remains a string; do not create `FieldName.ts`.
 
@@ -369,10 +375,11 @@ export type FormAction =
 ```ts
 import type { FormConfig } from "./FormConfig";
 
-export type ConfigContextValue = FormConfig[] | undefined;
+export type ConfigContextValue = FormConfig[] | null | undefined;
 ```
 
-- `undefined` means the hook is outside `ConfigProvider`; an empty array is a valid provider value with no matching config.
+- `undefined` means the hook is outside `ConfigProvider`; an unexpected `null` is handled as unavailable config.
+- An empty array is a valid provider value with no matching config.
 
 #### `LogEntry.ts`
 
@@ -607,7 +614,8 @@ useConfig("commissionQuote") → FormConfig | undefined
 
 ### Context error handling
 
-- If `useConfig` is called outside `ConfigProvider`, throw `useConfig must be used within ConfigProvider`.
+- If the Context value is `undefined` or unexpectedly `null`, return `undefined` so the Page renders `UnknownError` through the same missing-config path.
+- Use an explicit falsy guard for these unavailable Context values; an empty array remains valid because arrays are truthy.
 - If no item matches `formContext`, return `undefined`.
 - This includes an empty config array or deletion of the `"commissionQuote"` config object from the array.
 - If `CommissionQuotePage` receives `undefined`, do not render the form.
@@ -677,9 +685,6 @@ The JSON root is an array. This MVP contains one config object:
         "isRequired": true,
         "requiredErrorMessage": "Please select a risk band.",
         "placeholder": "Select a risk band",
-        "validation": {
-          "errorMessage": "Please select a valid risk band."
-        },
         "options": [
           { "label": "Low", "value": "LOW" },
           { "label": "Medium", "value": "MEDIUM" },
@@ -695,7 +700,7 @@ The JSON root is an array. This MVP contains one config object:
 - `formContext` uniquely identifies one form configuration.
 - `FormConfig.value` is an ordered `Field[]`.
 - The commission quote config contains two input items and one select item.
-- Config can change existing field labels, order, widths, validation limits/messages, and select options without changing component code.
+- Config can change existing field labels, order, widths, Input validation limits/messages, and Select options without changing component code.
 - Adding a new DTO field or a new `Field.type` requires corresponding schema, mapper, and switch changes; config is not claimed to make API-contract changes code-free.
 
 Each item in `FormConfig.value` is a `Field` object containing:
@@ -706,7 +711,8 @@ Each item in `FormConfig.value` is a `Field` object containing:
 - `width`: responsive 12-column grid width with inline shape `{ xs: number; md: number }`.
 - `isRequired`: whether an empty value is invalid.
 - `requiredErrorMessage`: message shown when a required field is empty.
-- `validation`: field validation rules and the single message used for any non-required validation failure.
+- Input fields contain `validation`: field validation rules and the single message used for any non-required Input validation failure.
+- Select fields omit `validation`; after the required check, their controlled value comes from the configured options.
 
 `Validation.ts` exports:
 
@@ -719,8 +725,8 @@ Validation
 - errorMessage: string
 ```
 
-- Every rule is config-driven; generic validation must not branch on a field name.
-- A field has only two client-side error outcomes: its configured required error or its configured validation error.
+- Every Input rule is config-driven; generic validation must not branch on a field name.
+- An Input has its configured required or validation error. A Select has only its configured required error.
 
 - `width.xs` and `width.md` must each be an integer from 1 to 12.
 - Do not create a separate `FieldWidth` schema; width is part of the `Field` config schema.
@@ -800,8 +806,8 @@ Every field change returns the same metadata shape:
 - Its exact signature is `validateField(field: Field, value: FieldValue): string | undefined`.
 - If `value` is `null`, return `requiredErrorMessage` only when `isRequired` is true.
 - For `Input`, enforce the configured `min`, `max`, `integer`, and `maxDecimalPlaces` rules when present.
-- For `Select`, require the value to match one of `field.options[].value`.
-- Return `validation.errorMessage` for any non-required failure; otherwise return `undefined`.
+- For `Select`, return `undefined` after the required check; the controlled component exposes only configured options.
+- Return `validation.errorMessage` for any non-required Input failure; otherwise return `undefined`.
 - Input and Select call `validateField()` for their client-side validation; `validateForm()` calls the same function for every configured field.
 - `validateField()` returns the configured error message or `undefined`; it does not update React state.
 - After successful validation, the Form passes the metadata list to `mapCommissionQuoteRequest()` from `commissionQuoteRequestMapper.ts`.
@@ -830,7 +836,7 @@ Every field change returns the same metadata shape:
 - Once a field has an error, revalidate it on every change and clear the error immediately when the value becomes valid.
 - A field displays only its own error.
 - An empty required field uses `requiredErrorMessage`.
-- Any other invalid value uses `validation.errorMessage`.
+- Any non-empty invalid Input value uses `validation.errorMessage`.
 - No debounce timer is required; blur defines when the user has finished the first editing attempt.
 
 ### Full-form validation
@@ -843,7 +849,7 @@ Generate quote / Future Next
 
 1. `validateForm()` checks every field in `config.value`, including untouched fields.
 2. Each empty required field receives its configured `requiredErrorMessage`.
-3. Each non-empty invalid field receives its configured `validation.errorMessage`.
+3. Each non-empty invalid Input receives its configured `validation.errorMessage`.
 4. Each reusable field displays the error associated with its own `name`.
 5. If any field is invalid, do not call `onSubmit` and do not navigate.
 6. If every field is valid, create `CommissionQuoteRequest` and continue with Generate quote or a future Next action.
@@ -1149,9 +1155,9 @@ code/backend/
 - After validation, convert once with `loanAmountCents = Math.round(loanAmount * 100)` and perform commission rounding in integer cents. Convert cents back to AUD numbers only when creating the response DTO.
 - The API is authoritative. Calling it directly from Postman applies the same required-field and business validation as the UI flow.
 - Both validation layers return `400 VALIDATION_ERROR` with user-readable `fieldErrors` keyed by DTO field name.
-- Do not return raw Zod messages. Map missing fields to their approved `requiredErrorMessage` and other invalid values to their approved `validation.errorMessage` from the Functional Spec/form config.
+- Do not return raw Zod messages. Map missing fields to their approved required messages and other invalid API values to their approved validation messages from the Functional Spec. Input validation messages are also stored in form config.
 - Every `400` uses the top-level message `Check the loan details and try again.`; malformed JSON may omit `fieldErrors`.
-- Schema and business validation must match `openapi.yaml`, Functional Spec, and frontend rules.
+- API schema and business validation must match `openapi.yaml` and Functional Spec. The frontend Select remains constrained to its configured enum options and therefore needs only required validation.
 
 ### Middleware and service order
 

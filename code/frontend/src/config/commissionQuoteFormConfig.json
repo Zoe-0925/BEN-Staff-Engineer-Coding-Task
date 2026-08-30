@@ -40,9 +40,6 @@
         "isRequired": true,
         "requiredErrorMessage": "Please select a risk band.",
         "placeholder": "Select a risk band",
-        "validation": {
-          "errorMessage": "Please select a valid risk band."
-        },
         "options": [
           { "label": "Low", "value": "LOW" },
           { "label": "Medium", "value": "MEDIUM" },

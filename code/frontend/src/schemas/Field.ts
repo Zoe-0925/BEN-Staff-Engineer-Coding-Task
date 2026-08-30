@@ -2,7 +2,6 @@ import type { SelectOption } from './SelectOption';
 import type { Validation } from './Validation';
 
 export type Field = {
-  type: 'Input' | 'Select';
   name: string;
   label: string;
   width: {
@@ -11,9 +10,16 @@ export type Field = {
   };
   isRequired: boolean;
   requiredErrorMessage: string;
-  validation: Validation;
-  prefix?: string;
-  suffix?: string;
-  placeholder?: string;
-  options?: SelectOption[];
-};
+} & (
+  | {
+      type: 'Input';
+      validation: Validation;
+      prefix?: string;
+      suffix?: string;
+    }
+  | {
+      type: 'Select';
+      placeholder?: string;
+      options: SelectOption[];
+    }
+);

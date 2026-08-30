@@ -61,10 +61,11 @@ Status: Ready for implementation
 - Required: yes.
 - Accepted values: `LOW`, `MEDIUM`, `HIGH`.
 - Missing: `Please select a risk band.`
-- Invalid: `Please select a valid risk band.`
+- The frontend Select exposes only the three accepted values and performs required validation only.
+- An invalid enum value sent directly to the API returns: `Please select a valid risk band.`
 
-- Frontend validation provides immediate feedback and prevents an invalid submission.
-- API validation applies the same rules and is authoritative.
+- Frontend validation provides immediate feedback and prevents an invalid form submission.
+- API validation remains authoritative and independently enforces the request DTO and enum contract.
 
 ## Data contract
 
