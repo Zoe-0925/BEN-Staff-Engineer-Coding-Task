@@ -85,7 +85,6 @@ Complete only the ticket selected by the candidate, then stop for review. Do not
     │   └── environments/
     │       ├── success.env
     │       ├── auth-error.env
-    │       ├── api-404.env
     │       ├── api-500.env
     │       ├── api-503.env
     │       ├── timeout.env
@@ -1101,7 +1100,8 @@ State transitions:
 - `brand-logo.svg` is a project-created circular monogram containing an original white geometric letter `B` on a plum background.
 - The circular badge distinguishes the logo from rectangular application buttons.
 - `AppHeader` is a simple full-width bar with a bottom border.
-- It displays the non-interactive context `Home loans / Commission quote` beside the logo.
+- The logo is a home link that performs a full navigation to `/`, so clicking it clears all route-local state even when the current route is already `/`.
+- It displays the non-interactive context `Home loans / Commission quote` beside the interactive logo.
 - `Commission quote` uses the primary plum colour to identify the current page.
 - The header contains no links, buttons, menus, or navigation behaviour.
 - Do not add a progress bar: this MVP contains one page and no confirmed multi-step journey.

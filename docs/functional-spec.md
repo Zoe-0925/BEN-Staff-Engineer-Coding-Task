@@ -18,6 +18,11 @@ Status: Ready for implementation
   - **Frontend:** Validate input, submit the request, show progress, then show the quote or error.
   - **API:** Authenticate, validate, calculate, and return the quote; reject invalid requests and simulate service failure.
 
+### Return to a fresh quote
+
+- The header logo links to `/`.
+- Clicking the logo returns to the commission quote home page and clears all route-local form, request, error, and result state, including when the user is already on `/`.
+
 ## Business rules
 
 - `LOW`: 0.1% (`0.001`).

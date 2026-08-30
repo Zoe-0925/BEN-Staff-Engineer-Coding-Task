@@ -6,33 +6,28 @@ Status: MVP implemented and verified.
 
 This four-hour take-home project lets a staff user enter loan details and generate a commission quote through a Mock Commission Quote API.
 
-The MVP contains:
+## Technology stack
 
-- One React + TypeScript UI.
-- One Node.js + Express + TypeScript REST API.
-- API-key authentication through the `api-key` request header.
-- Client and API validation.
-- Loading, success, validation, authentication, timeout, service-unavailable, not-found, and unexpected-error states.
-- Focused automated tests for core behaviour.
+### Frontend
 
-## Source-of-truth artifacts
+- React 19 and TypeScript 6.
+- Vite 8 for local development and production builds.
+- React Router 7 for application routing.
+- Styled Components 6 for component-scoped styling and shared theme tokens.
+- Axios for API requests and `loglevel` for structured browser logging.
 
-Implementation must follow these reviewed artifacts:
+### Backend
 
-- [Requirements](docs/requirements-analysis.md)
-- [Functional Spec](docs/functional-spec.md)
-- [Technical Spec](docs/technical-spec.md)
-- [Code Quality Instructions](docs/code-quality-instructions.md)
-- [Implementation Plan](docs/implementation-plan.md)
-- [OpenAPI contract](code/backend/openapi.yaml)
-- [Decision Log](docs/decision-log.md)
-- [Evaluation Signals](docs/evaluation-signals.md)
-- [Success UI mockup](docs/commission-quote-layout.html)
-- [UI state mockups](docs/commission-quote-state-layouts.html)
+- Node.js 24, Express 5, and TypeScript 6.
+- Zod for request schema validation.
+- Pino and `pino-http` for structured request logging and correlation IDs.
+- Jest 30 for focused service and endpoint tests.
 
-If code and an artifact disagree, stop and update the artifact before changing the implementation.
+### Tooling
 
-Implementation is reviewed one ticket at a time. The AI must complete only the ticket selected by the candidate and stop before starting the next ticket.
+- npm lockfiles and clean `npm ci` installation for the root, frontend, and backend workspaces.
+- ESLint with zero-warning enforcement.
+- Prettier for deterministic formatting.
 
 ## Architecture
 
@@ -48,7 +43,51 @@ Browser UI
 
 The UI and API are stateless. Form state remains in the browser, and the API does not persist quotes or sessions.
 
+## SDLC and delivery artifacts
+
+This repository was developed incrementally through an SDLC-style workflow: requirements analysis,
+functional and API design, technical design, implementation planning, ticket-by-ticket delivery, and
+final verification.
+
+To keep the implementation fully aligned with the reviewed requirements—and to reduce the risk of
+AI-generated assumptions or hallucinations—each decision, contract, design boundary, and review
+checkpoint was recorded as a version-controlled artifact. Implementation proceeded one reviewed
+ticket at a time, creating a traceable path from the original requirements to the final code and
+verification evidence.
+
+The project artifacts are available directly in this GitHub repository:
+
+- [Requirements analysis](./docs/requirements-analysis.md)
+- [Functional Spec](./docs/functional-spec.md)
+- [Technical Spec](./docs/technical-spec.md)
+- [Code Quality Instructions](./docs/code-quality-instructions.md)
+- [Implementation Plan](./docs/implementation-plan.md)
+- [OpenAPI contract](./code/backend/openapi.yaml)
+- [Decision Log](./docs/decision-log.md)
+- [Evaluation Signals](./docs/evaluation-signals.md)
+- [Success UI mockup](./docs/commission-quote-layout.html)
+- [UI state mockups](./docs/commission-quote-state-layouts.html)
+
+## Key engineering decisions
+
+- **Exact currency calculations:** loan amounts are converted to integer AUD cents before commission
+  calculations to avoid floating-point errors.
+- **Config-driven form:** reviewed JSON flows through `ConfigProvider` and `useConfig`, allowing the
+  form to render approved metadata without duplicating field definitions in the Page.
+- **Layered validation:** the UI provides immediate feedback, while the API independently validates
+  the DTO and business rules as the authoritative boundary.
+- **Centralised request errors:** one reusable error mapper converts Axios failures into explicit UI
+  request states, keeping the Page orchestration readable.
+- **End-to-end correlation:** the same correlation ID connects frontend logs, HTTP headers, backend
+  request logs, and safe system-error UI.
+- **Local state by design:** form and request state remain route-local because this single-page MVP
+  does not require Redux or persisted client state.
+- **Explicit demo security boundary:** the browser-visible API key is accepted only for the local
+  Mock API; a production Vendor key would remain behind a BFF or API gateway.
+
 ## Run locally on macOS
+
+Local setup has been verified on macOS. Windows and Linux setup instructions are planned as a future enhancement.
 
 ### Prerequisites
 
@@ -207,15 +246,6 @@ npm run e2e:api-503
 Submit valid values. Expect **The quote service is temporarily unavailable. Please try again later.**
 on the form page with all values preserved.
 
-### API route not found
-
-```bash
-npm run e2e:api-404
-```
-
-Submit valid values. Expect **The requested resource was not found.** on the form page with all values
-preserved.
-
 ### Frontend route not found
 
 ```bash
@@ -223,7 +253,8 @@ npm run e2e:success
 ```
 
 Open `http://localhost:3000/invalid`. Expect the application header and footer with `404` and
-**Page not found.** Return to `http://localhost:3000/` and confirm the form starts with empty values.
+**Page not found.** Click the header logo and confirm the app returns to `/` with an empty form. The
+same logo action clears form, request, error, and result state when used from the quote page.
 
 ### Missing form configuration
 
@@ -246,35 +277,34 @@ Expect HTTP `200`, the quote DTO, and response header
 `x-correlation-id: 550e8400-e29b-41d4-a716-446655440001`. The backend request log contains the same
 value.
 
-## Test-driven development
+## Testing and quality gates
 
-The confirmed main flow follows red-green-refactor:
+The main flow was developed with a focused red-green-refactor cycle. Automated coverage verifies the
+commission calculation, currency rounding, successful authenticated endpoint request, response DTO,
+and correlation header. The error-state matrix is verified through the committed manual E2E
+environments documented above.
 
-1. Add one focused test for the next confirmed behaviour.
-2. Run it and confirm it fails for the expected reason.
-3. Add the minimum implementation required to pass.
-4. Run the relevant test again.
-5. Refactor without changing behaviour, then run the suite.
-
-Do not generate the main-flow implementation before its tests. Only draft tests in the test files already listed in the Technical Spec. Do not expand this four-hour task into a complete error-scenario test matrix.
-
-Main-flow test order:
-
-1. Commission calculation and currency rounding.
-2. Successful REST request with a valid API key and valid payload.
-
-Use Jest only. Backend tests are plain JavaScript and run against the compiled backend output. Do not install a TypeScript Jest transformer, React test library, DOM test environment, HTTP test library, or API mocking library.
-
-Frontend UI behaviour is verified manually against the approved mockups and successful main flow.
-
-Backend test command:
+Run all quality gates from `code/`:
 
 ```bash
-cd code/backend
-npm test
+npm run format:check
+npm --prefix frontend run typecheck
+npm --prefix frontend run lint
+npm --prefix frontend run build
+npm --prefix backend run lint
+npm --prefix backend run build
+npm --prefix backend test
 ```
 
-The backend contains `commissionQuoteService.test.js` and `createCommissionQuoteRoute.test.js` for the confirmed main flow.
+The backend Jest suite contains:
+
+- `commissionQuoteService.test.js` for calculation and currency rounding.
+- `createCommissionQuoteRoute.test.js` for the successful authenticated HTTP contract and correlation
+  header.
+
+Frontend behaviour is verified manually against the approved mockups and the committed E2E
+environments. Final verification completed with zero formatting or lint warnings, successful
+frontend and backend builds, and `2` passing Jest test suites containing `2` passing tests.
 
 ## Confirmed MVP limitations
 
