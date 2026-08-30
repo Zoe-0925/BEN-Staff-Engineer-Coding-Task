@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 
-export const PageContainer = styled.main`
-  flex: 1;
-  width: min(520px, calc(100% - 64px));
+export const PageContainer = styled.div`
+  width: ${({ theme }) =>
+    `min(${theme.sizes.pageMaxWidth}, calc(100% - ${theme.spacing.pageHorizontal}))`};
   margin: ${({ theme }) => theme.spacing.page} auto;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.medium}) {
-    width: calc(100% - ${({ theme }) => theme.spacing.result});
+    width: calc(100% - ${({ theme }) => theme.spacing.pageHorizontalMobile});
   }
 `;
 
@@ -28,8 +28,7 @@ export const PageIntroduction = styled.p`
 
 export const PageLevelError = styled.div`
   margin: -${({ theme }) => theme.spacing.medium} 0 ${({ theme }) => theme.spacing.section};
-  padding: ${({ theme }) => theme.typography.fontSize.bodySmall}
-    ${({ theme }) => theme.spacing.xxLarge};
+  padding: ${({ theme }) => theme.spacing.alertVertical} ${({ theme }) => theme.spacing.xxLarge};
   border-left: ${({ theme }) => theme.radii.small} solid ${({ theme }) => theme.colors.error};
   border-radius: ${({ theme }) => theme.radii.small};
   background: ${({ theme }) => theme.colors.errorSoft};
@@ -48,7 +47,7 @@ export const LoadingNote = styled.p`
 
 export const LoadingResult = styled.section`
   display: grid;
-  min-height: 112px;
+  min-height: ${({ theme }) => theme.sizes.loadingResultMinHeight};
   margin-top: ${({ theme }) => theme.spacing.result};
   padding: ${({ theme }) => theme.spacing.section};
   place-items: center;

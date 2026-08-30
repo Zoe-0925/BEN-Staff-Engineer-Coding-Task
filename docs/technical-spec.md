@@ -84,7 +84,7 @@ Complete only the ticket selected by the candidate, then stop for review. Do not
     └── backend/
 ```
 
-- Use Node.js 22 or later and npm.
+- Use Node.js 24.x and npm.
 - Repository-root `.gitignore` ignores every `node_modules/`, `dist/`, `.env`, and local OS/editor file; it must not ignore either `.env.example`.
 - All executable application code and npm tooling live under `code/`; documentation remains at the repository root.
 - `code/package.json` contains local orchestration scripts, the `concurrently` development dependency, and the code-workspace Prettier dependency.
@@ -514,7 +514,7 @@ npm run lint      → run ESLint
 
 ### Frontend HTTP configuration
 
-- `VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:5000` is stored in `code/frontend/.env.example`.
+- `VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:8090` is stored in `code/frontend/.env.example`.
 - `commissionQuoteApi.ts` creates one module-level Axios instance with that `baseURL` and `timeout: 60000`.
 - It exports `createCommissionQuote(request: CommissionQuoteRequest, correlationId: string): Promise<CommissionQuoteResponse>`.
 - It calls `POST /api/commission-quotes` with the request DTO and the confirmed headers.
@@ -1220,14 +1220,14 @@ After registering the quote route, `app.ts` registers `notFound` and then `error
 ## 14. Ports, CORS, and local API access
 
 - Frontend URL: `http://localhost:3000`.
-- Backend URL: `http://localhost:5000`.
+- Backend URL: `http://localhost:8090`.
 - Vite must use port `3000` with `strictPort: true`.
-- Backend uses `PORT=5000` from `code/backend/.env.example`.
-- The Axios base URL is `http://localhost:5000` through `VITE_COMMISSION_QUOTE_API_BASE_URL`.
+- Backend uses `PORT=8090` from `code/backend/.env.example`.
+- The Axios base URL is `http://localhost:8090` through `VITE_COMMISSION_QUOTE_API_BASE_URL`.
 - Use application-level `cors()` with origin `*` for this local MVP and do not enable credentials.
 - Allow `POST` and `OPTIONS`; allow `Content-Type`, `api-key`, and `x-correlation-id` request headers.
 - Expose `x-correlation-id` so the browser can read it from the response.
-- Postman can call `http://localhost:5000/api/commission-quotes` directly; CORS does not restrict non-browser clients.
+- Postman can call `http://localhost:8090/api/commission-quotes` directly; CORS does not restrict non-browser clients.
 
 ## 15. npm scripts and local orchestration
 

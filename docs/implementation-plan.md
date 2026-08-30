@@ -290,7 +290,7 @@ Read all four sources before editing. Do not implement CQ-005 from Functional Sp
 
 **Acceptance criteria:**
 
-- `npm run dev` starts UI on `3000` and API on `5000`.
+- `npm run dev` starts UI on `3000` and API on `8090`.
 - The UI matches the approved success and state mockups at desktop and narrow widths.
 - Unknown routes render the approved 404 page and clear local form state by unmounting the route.
 - Frontend and backend builds, lint, format check, and confirmed tests pass.

@@ -1,6 +1,6 @@
 # Commission Quote App
 
-Status: specification complete; implementation pending.
+Status: MVP implemented and verified.
 
 ## Overview
 
@@ -48,75 +48,50 @@ Browser UI
 
 The UI and API are stateless. Form state remains in the browser, and the API does not persist quotes or sessions.
 
-## Local environment
+## Run locally on macOS
 
-Prerequisite: Node.js 22 or later and npm.
+### Prerequisites
 
-The committed examples will contain:
+- Git.
+- Node.js 24.x. npm is included with Node.js.
 
-```text
-code/frontend/.env.example
-VITE_COMMISSION_QUOTE_API_KEY=local-demo-key
-VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:5000
+No Docker, database, or global npm package is required.
+
+Confirm the installed versions:
+
+```bash
+git --version
+node --version
+npm --version
 ```
 
-```text
-code/backend/.env.example
-PORT=5000
-COMMISSION_QUOTE_API_KEY=local-demo-key
-MOCK_API_ERROR_CODE=
-```
+`node --version` must report `v24`. If Node.js is not installed, install the macOS Node.js 24 package from [nodejs.org](https://nodejs.org/en/download/archive/v24).
 
-Copy each `.env.example` to `.env` before running the application. The frontend and backend API-key values must match.
+### Install and run
+
+From the repository root:
 
 ```bash
 cp code/frontend/.env.example code/frontend/.env
 cp code/backend/.env.example code/backend/.env
-```
 
-Real `.env` files must remain Git-ignored. The browser-visible key is an accepted demo limitation; a production Vendor key would remain behind a BFF or API gateway.
-
-## Run locally
-
-Enter the code workspace from the repository root:
-
-```bash
 cd code
-```
+npm ci
+npm --prefix frontend ci
+npm --prefix backend ci
 
-Install dependencies from `code/`:
-
-```bash
-npm install
-npm --prefix frontend install
-npm --prefix backend install
-```
-
-Then run both applications:
-
-```bash
 npm run dev
 ```
 
-Run only one application when required:
-
-```bash
-npm run dev:ui
-npm run dev:api
-```
+Open `http://localhost:3000` in a browser.
 
 - UI: `http://localhost:3000`
-- API: `http://localhost:5000`
-- Postman: `POST http://localhost:5000/api/commission-quotes`
+- API: `http://localhost:8090`
+- API endpoint: `POST http://localhost:8090/api/commission-quotes`
 
-Code-quality commands from `code/`:
+Press `Control+C` in Terminal to stop both applications.
 
-```bash
-npm run format:check
-npm --prefix frontend run typecheck
-npm --prefix frontend run lint
-npm --prefix backend run lint
-```
+The example frontend and backend API keys already match. Real `.env` files remain Git-ignored.
 
 ## Reproduce API errors
 

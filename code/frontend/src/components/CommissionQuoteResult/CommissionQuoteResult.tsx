@@ -25,7 +25,7 @@ const Result = styled.section`
 `;
 
 const ResultHeading = styled.h2`
-  margin: 0 0 ${({ theme }) => theme.typography.fontSize.resultHeading};
+  margin: 0 0 ${({ theme }) => theme.spacing.resultHeadingGap};
   color: ${({ theme }) => theme.colors.primary};
   font-size: ${({ theme }) => theme.typography.fontSize.resultHeading};
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
@@ -34,7 +34,7 @@ const ResultHeading = styled.h2`
 const ResultRow = styled.div<{ $isTotal?: boolean }>`
   display: flex;
   justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.xLarge};
+  gap: ${({ theme }) => theme.spacing.mobileGutter};
   padding: ${({ $isTotal, theme }) =>
     $isTotal ? `${theme.spacing.xxLarge} 0 ${theme.spacing.medium}` : `${theme.spacing.medium} 0`};
   border-bottom: ${({ $isTotal, theme }) =>
