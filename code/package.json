@@ -11,7 +11,6 @@
     "dev:api": "npm --prefix backend run dev",
     "e2e:success": "node e2e/runScenario.mjs success",
     "e2e:auth-error": "node e2e/runScenario.mjs auth-error",
-    "e2e:api-404": "node e2e/runScenario.mjs api-404",
     "e2e:api-500": "node e2e/runScenario.mjs api-500",
     "e2e:api-503": "node e2e/runScenario.mjs api-503",
     "e2e:timeout": "node e2e/runScenario.mjs timeout",

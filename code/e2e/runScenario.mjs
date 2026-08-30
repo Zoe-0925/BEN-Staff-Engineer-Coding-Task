@@ -3,15 +3,7 @@ import { spawn } from 'node:child_process';
 import { parseEnv } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
-const scenarioNames = [
-  'success',
-  'auth-error',
-  'api-404',
-  'api-500',
-  'api-503',
-  'timeout',
-  'missing-config',
-];
+const scenarioNames = ['success', 'auth-error', 'api-500', 'api-503', 'timeout', 'missing-config'];
 const scenarioName = process.argv[2];
 
 if (!scenarioName || !scenarioNames.includes(scenarioName)) {

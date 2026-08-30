@@ -18,6 +18,17 @@ const HeaderContent = styled.div`
   align-items: center;
 `;
 
+const LogoLink = styled.a`
+  display: block;
+  flex: 0 0 auto;
+  border-radius: 50%;
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+`;
+
 const Logo = styled.img`
   display: block;
   width: ${({ theme }) => theme.sizes.logo};
@@ -46,7 +57,9 @@ export function AppHeader() {
   return (
     <Header aria-label="Application header">
       <HeaderContent>
-        <Logo src={brandLogo} alt="Placeholder B logo" />
+        <LogoLink href="/" aria-label="Return to commission quote home">
+          <Logo src={brandLogo} alt="Placeholder B logo" />
+        </LogoLink>
         <ProductName>Home loans</ProductName>
         <Divider aria-hidden="true">/</Divider>
         <CurrentPage aria-current="page">Commission quote</CurrentPage>
