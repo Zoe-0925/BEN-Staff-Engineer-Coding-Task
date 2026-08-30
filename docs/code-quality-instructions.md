@@ -83,7 +83,7 @@ Required Prettier settings:
 - Reuse the approved stable boundaries: config-driven fields, reusable Input/Select/Button components, schemas, validator, mapper, API service, middleware, and commission service.
 - Extract shared code only when it has a clear name and a confirmed second consumer, or when it creates a required test or domain boundary.
 - Do not add base components, factories, repositories, dependency-injection containers, generic form frameworks, or wrapper services for possible future use.
-- Do not create a general-purpose `utils` dumping ground. The only approved utility is the specifically named `validateField.ts`.
+- Do not create a general-purpose `utils` dumping ground. The approved utilities are the specifically named `validateField.ts` and `handleRequestError.ts`.
 - Do not duplicate business rules or magic values. Each rule must have one clear owner.
 - Do not move code across approved boundaries merely to reduce a small amount of repetition.
 

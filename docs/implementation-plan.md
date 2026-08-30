@@ -237,11 +237,13 @@ Read all four sources before editing. Do not implement CQ-005 from Functional Sp
 - `code/frontend/src/pages/CommissionQuotePage.styles.ts`
 - `code/frontend/src/components/CommissionQuoteResult/CommissionQuoteResult.tsx`
 - `code/frontend/src/components/UnknownError/UnknownError.tsx`
+- `code/frontend/src/utils/handleRequestError.ts`
 - Existing frontend API service only if integration reveals a contract mismatch.
 
 **Implementation:**
 
 - Own API submission and `RequestState` in `CommissionQuotePage`.
+- Reuse `handleRequestError` as the single application-level caught-request error handler.
 - Map validated form metadata in the Page. Treat an `undefined` mapping result as `unknownError` without throwing or calling the API.
 - Generate one UUID per request and preserve it through request, logs, response, and displayed system errors.
 - Render success values only from the response; never recalculate them in the UI.
