@@ -9,8 +9,15 @@
     "dev": "concurrently --kill-others-on-fail \"npm run dev:ui\" \"npm run dev:api\"",
     "dev:ui": "npm --prefix frontend run dev",
     "dev:api": "npm --prefix backend run dev",
-    "format": "prettier --write --no-error-on-unmatched-pattern \"frontend/src/**/*.{ts,tsx,json}\" \"backend/src/**/*.ts\" \"backend/test/**/*.js\"",
-    "format:check": "prettier --check --no-error-on-unmatched-pattern \"frontend/src/**/*.{ts,tsx,json}\" \"backend/src/**/*.ts\" \"backend/test/**/*.js\""
+    "e2e:success": "node e2e/runScenario.mjs success",
+    "e2e:auth-error": "node e2e/runScenario.mjs auth-error",
+    "e2e:api-404": "node e2e/runScenario.mjs api-404",
+    "e2e:api-500": "node e2e/runScenario.mjs api-500",
+    "e2e:api-503": "node e2e/runScenario.mjs api-503",
+    "e2e:timeout": "node e2e/runScenario.mjs timeout",
+    "e2e:missing-config": "node e2e/runScenario.mjs missing-config",
+    "format": "prettier --write --no-error-on-unmatched-pattern \"frontend/src/**/*.{ts,tsx,json}\" \"backend/src/**/*.ts\" \"backend/test/**/*.js\" \"e2e/**/*.mjs\"",
+    "format:check": "prettier --check --no-error-on-unmatched-pattern \"frontend/src/**/*.{ts,tsx,json}\" \"backend/src/**/*.ts\" \"backend/test/**/*.js\" \"e2e/**/*.mjs\""
   },
   "devDependencies": {
     "concurrently": "^10.0.5",

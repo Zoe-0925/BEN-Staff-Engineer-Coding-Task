@@ -11,12 +11,22 @@ function readEnvironmentVariable(environmentValue: unknown): string | undefined 
   return typeof environmentValue === 'string' ? environmentValue : undefined;
 }
 
+function readApiTimeoutMs(environmentValue: unknown): number {
+  if (typeof environmentValue !== 'string') {
+    return 60_000;
+  }
+
+  const timeoutMs = Number(environmentValue);
+  return Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 60_000;
+}
+
 const API_BASE_URL = readEnvironmentVariable(import.meta.env.VITE_COMMISSION_QUOTE_API_BASE_URL);
 const API_KEY = readEnvironmentVariable(import.meta.env.VITE_COMMISSION_QUOTE_API_KEY);
+const API_TIMEOUT_MS = readApiTimeoutMs(import.meta.env.VITE_COMMISSION_QUOTE_API_TIMEOUT_MS);
 
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60_000,
+  timeout: API_TIMEOUT_MS,
 });
 
 function readCorrelationId(headers: unknown, fallbackCorrelationId: string): string {

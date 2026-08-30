@@ -80,6 +80,16 @@ Complete only the ticket selected by the candidate, then stop for review. Do not
     ├── .prettierrc.json
     ├── package.json
     ├── package-lock.json
+    ├── e2e/
+    │   ├── runScenario.mjs
+    │   └── environments/
+    │       ├── success.env
+    │       ├── auth-error.env
+    │       ├── api-404.env
+    │       ├── api-500.env
+    │       ├── api-503.env
+    │       ├── timeout.env
+    │       └── missing-config.env
     ├── frontend/
     └── backend/
 ```
@@ -87,7 +97,7 @@ Complete only the ticket selected by the candidate, then stop for review. Do not
 - Use Node.js 24.x and npm.
 - Repository-root `.gitignore` ignores every `node_modules/`, `dist/`, `.env`, and local OS/editor file; it must not ignore either `.env.example`.
 - All executable application code and npm tooling live under `code/`; documentation remains at the repository root.
-- `code/package.json` contains local orchestration scripts, the `concurrently` development dependency, and the code-workspace Prettier dependency.
+- `code/package.json` contains local orchestration and manual E2E environment scripts, the `concurrently` development dependency, and the code-workspace Prettier dependency.
 - `code/.prettierrc.json` contains the exact formatting rules in Code Quality Instructions.
 - Run application npm commands from `code/` unless a command explicitly states otherwise.
 
@@ -514,8 +524,8 @@ npm run lint      → run ESLint
 
 ### Frontend HTTP configuration
 
-- `VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:8090` is stored in `code/frontend/.env.example`.
-- `commissionQuoteApi.ts` creates one module-level Axios instance with that `baseURL` and `timeout: 60000`.
+- `VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:8090` and `VITE_COMMISSION_QUOTE_API_TIMEOUT_MS=60000` are stored in `code/frontend/.env.example`.
+- `commissionQuoteApi.ts` creates one module-level Axios instance with that `baseURL` and the positive numeric timeout read from `VITE_COMMISSION_QUOTE_API_TIMEOUT_MS`; missing or invalid timeout configuration falls back to `60000`.
 - It exports `createCommissionQuote(request: CommissionQuoteRequest, correlationId: string): Promise<CommissionQuoteResponse>`.
 - It calls `POST /api/commission-quotes` with the request DTO and the confirmed headers.
 - The function returns `response.data`; it does not expose `AxiosResponse` to the Page.
@@ -597,7 +607,7 @@ App
 - `commissionQuoteFormConfig.json` simulates a config collection loaded from an external source such as an API or database.
 - `ConfigContext` reads the full config array and provides it to the app.
 - `useConfig(formContext)` wraps `useContext`, searches the array by `formContext`, and returns the matching config object.
-- `CommissionQuotePage` calls `useConfig("commissionQuote")` and passes the returned `config.value` to `CommissionQuoteForm`.
+- `CommissionQuotePage` calls `useConfig(formContext)` using `VITE_COMMISSION_QUOTE_FORM_CONTEXT`, with `commissionQuote` as the normal default, and passes the returned `config.value` to `CommissionQuoteForm`.
 - `CommissionQuotePage` does not import or search the JSON directly.
 - `CommissionQuoteForm` renders `config.value` in array order and uses a switch statement to map each `Field.type` to a reusable component.
 
@@ -634,7 +644,7 @@ useConfig("commissionQuote") → FormConfig | undefined
 ```text
 level: error
 event: CONFIG_NOT_FOUND
-message: Config not found for formContext: commissionQuote
+message: Config not found for formContext: {configured formContext}
 correlationId: generated UUID when available
 ```
 
@@ -749,7 +759,7 @@ Field.type = "Select" → render reusable Select
 
 - Import the static JSON once at module scope.
 - `ConfigContext` passes the imported array reference directly; do not spread, clone, or rebuild it during render.
-- `useConfig("commissionQuote")` uses `find` because the MVP contains one config item.
+- `useConfig(formContext)` uses `find` because the MVP contains one config item; the normal configured value is `commissionQuote`.
 - Use `field.name` as the stable React key when rendering `config.value`.
 - Do not add `Map`, caching, `useMemo`, or `React.memo` for this static one-item config.
 - Loading and caching remote config is outside the MVP scope.
@@ -977,7 +987,7 @@ State transitions:
 - Do not implement staff login, OIDC, an API-key input, or an authentication route.
 - Commit `code/frontend/.env.example` containing `VITE_COMMISSION_QUOTE_API_KEY=local-demo-key`.
 - Commit `code/backend/.env.example` containing `COMMISSION_QUOTE_API_KEY=local-demo-key` and an unset `MOCK_API_ERROR_CODE` example.
-- The reviewer copies each `.env.example` to `.env`; both local values must match for successful requests.
+- The reviewer can run the committed manual E2E environments without creating a local `.env`; the frontend and backend mock API-key values match in the success environment.
 - Ignore all real `.env` files in Git. Do not commit a real credential.
 - `commissionQuoteApi.ts` reads `VITE_COMMISSION_QUOTE_API_KEY` and automatically sends it as the `api-key` header.
 - The Mock API reads `COMMISSION_QUOTE_API_KEY` and compares it with the header before validation and calculation.
@@ -993,7 +1003,7 @@ State transitions:
 - `500`: render `UnknownError` using the request correlation ID.
 - `503`: show **The quote service is temporarily unavailable. Please try again later.** using the same page-level alert placement as timeout.
 - Timeout is a frontend-generated `REQUEST_TIMEOUT` condition, not an HTTP `4xx` or `5xx` response.
-- The Axios instance enforces the 60-second timeout. Map Axios timeout errors (`ECONNABORTED` or `ETIMEDOUT`) to `REQUEST_TIMEOUT` before generic error handling; do not add a second timeout timer.
+- The Axios instance enforces the configured timeout, which defaults to 60 seconds. Map Axios timeout errors (`ECONNABORTED` or `ETIMEDOUT`) to `REQUEST_TIMEOUT` before generic error handling; do not add a second timeout timer.
 - `CommissionQuotePage` performs all mappings from Axios `response.status` or `error.code` into `RequestState`; do not map request state inside `commissionQuoteApi.ts`.
 - Timeout message: **We couldn't generate the quote. Please try again later.**
 - Show the timeout message in the page-level alert, preserve the form values, restore **Generate quote**, and allow retry.
@@ -1237,7 +1247,8 @@ Code-workspace `code/package.json`:
 npm run dev          → run UI and API together with concurrently
 npm run dev:ui       → run only frontend
 npm run dev:api      → run only backend
-npm run format       → apply Prettier to frontend/src, backend/src, and backend/test
+npm run e2e:*        → run the complete app with one committed manual E2E environment
+npm run format       → apply Prettier to frontend/src, backend/src, backend/test, and e2e scripts
 npm run format:check → verify formatting without changing files
 ```
 
@@ -1245,6 +1256,7 @@ npm run format:check → verify formatting without changing files
 - The code-workspace `dev` script uses the local `concurrently` dev dependency and stops both processes when either one fails.
 - `dev:ui` runs `npm --prefix frontend run dev`.
 - `dev:api` runs `npm --prefix backend run dev`.
+- Each `e2e:*` script loads one environment from `code/e2e/environments/` and starts the unchanged complete application; these manual scenarios do not add UI controls or test-only API routes.
 - `format` and `format:check` use `code/.prettierrc.json` and do not rewrite reviewed Markdown, HTML mockups, SVG, or OpenAPI.
 - Use the valid npm syntax `npm run dev:ui` and `npm run dev:api` in documentation and scripts.
 
@@ -1264,4 +1276,4 @@ npm run lint   → eslint src --max-warnings=0
 - `createCommissionQuoteRoute.test.js` starts the compiled Express app on an ephemeral port, sends a valid request with Node's built-in `fetch`, asserts `200`, the response contract, and correlation header, then closes the server.
 - Both tests use the canonical `500000 / 360 / LOW` request and expected values documented in the Functional Spec/OpenAPI example; assert `quoteId` by UUID shape, not a fixed value.
 - The endpoint test sets `COMMISSION_QUOTE_API_KEY` and clears `MOCK_API_ERROR_CODE` before importing or starting the compiled app.
-- Do not add tests for error scenarios or frontend implementation within the four-hour scope.
+- Do not add automated tests for error scenarios or frontend implementation within the four-hour scope; use the committed manual E2E environments for reviewer verification.

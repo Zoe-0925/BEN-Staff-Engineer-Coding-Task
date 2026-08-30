@@ -173,7 +173,7 @@ Read all four sources before editing. Do not implement CQ-005 from Functional Sp
 
 - Copy the schema contracts exactly from Technical Spec.
 - Store the approved form config as a JSON array containing the `commissionQuote` form.
-- Make `useConfig("commissionQuote")` return one matching config or `undefined`.
+- Make `useConfig(formContext)` return one matching config or `undefined`; the normal configured value is `commissionQuote`.
 - Implement generic config-driven field validation without switching on field names.
 - Map request values by metadata name, never by array position.
 - Configure one Axios client with the approved base URL, timeout, API key, and correlation headers.
@@ -305,7 +305,7 @@ Read all four sources before editing. Do not implement CQ-005 from Functional Sp
 
 **Modify:**
 
-- README only when actual commands or verified limitations differ from the current draft.
+- README and the isolated `code/e2e/` manual environment launchers when actual verification commands or verified limitations differ from the current draft.
 - Source files only to fix a demonstrated defect; do not perform an architectural rewrite.
 
 **Verification:**
