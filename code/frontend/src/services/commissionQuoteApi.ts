@@ -20,7 +20,7 @@ const axiosClient = axios.create({
 });
 
 function readCorrelationId(headers: unknown, fallbackCorrelationId: string): string {
-  if (typeof headers !== 'object' || headers === null) {
+  if (!headers || typeof headers !== 'object') {
     return fallbackCorrelationId;
   }
 

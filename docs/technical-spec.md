@@ -243,10 +243,11 @@ export type RiskBand = "LOW" | "MEDIUM" | "HIGH";
 #### `FieldValue.ts`
 
 ```ts
-export type FieldValue = number | string | null;
+export type FieldValue = number | string;
 ```
 
-- Empty Input and Select values are `null`; they are never stored as empty strings.
+- `FieldValue` represents a value that exists; it never includes `null`, `undefined`, or an empty string.
+- Empty Input and Select state is represented by the required `FieldMetadata.value` property containing `undefined`.
 - `loanAmount` and `loanTermInMonths` are numbers in form state and in the request DTO.
 - Select option values are strings in generic form state. Domain narrowing occurs only at the DTO mapper boundary.
 
@@ -257,7 +258,7 @@ import type { FieldValue } from "./FieldValue";
 
 export type FieldMetadata = {
   name: string;
-  value: FieldValue;
+  value: FieldValue | undefined;
 };
 ```
 
@@ -374,10 +375,10 @@ export type FormAction =
 ```ts
 import type { FormConfig } from "./FormConfig";
 
-export type ConfigContextValue = FormConfig[] | null | undefined;
+export type ConfigContextValue = FormConfig[] | undefined;
 ```
 
-- `undefined` means the hook is outside `ConfigProvider`; an unexpected `null` is handled as unavailable config.
+- `undefined` means config is unavailable, including use outside `ConfigProvider`.
 - An empty array is a valid provider value with no matching config.
 
 #### `LogEntry.ts`
@@ -435,7 +436,7 @@ Required component prop contracts:
 // Input.tsx
 type InputProps = {
   field: Field;
-  value: number | null;
+  value: number | undefined;
   error?: string;
   disabled: boolean;
   onChange: (field: FieldMetadata, error?: string) => void;
@@ -445,7 +446,7 @@ type InputProps = {
 // Select.tsx
 type SelectProps = {
   field: Field;
-  value: string | null;
+  value: string | undefined;
   error?: string;
   disabled: boolean;
   onChange: (field: FieldMetadata, error?: string) => void;
@@ -613,8 +614,8 @@ useConfig("commissionQuote") → FormConfig | undefined
 
 ### Context error handling
 
-- If the Context value is `undefined` or unexpectedly `null`, return `undefined` so the Page renders `UnknownError` through the same missing-config path.
-- Use an explicit falsy guard for these unavailable Context values; an empty array remains valid because arrays are truthy.
+- If the Context value is `undefined`, return `undefined` so the Page handles the same missing-config path.
+- Use an explicit falsy guard for the unavailable Context value; an empty array remains valid because arrays are truthy.
 - If no item matches `formContext`, return `undefined`.
 - This includes an empty config array or deletion of the `"commissionQuote"` config object from the array.
 - If `CommissionQuotePage` receives `undefined`, do not render the form.
@@ -794,7 +795,7 @@ Every field change returns the same metadata shape:
 ]
 ```
 
-- Initialise the list from `config.value` in the same order with one `{ name: field.name, value: null }` item per field.
+- Initialise the list from `config.value` in the same order with one `{ name: field.name, value: undefined }` item per field.
 - Local `useReducer` owns the metadata list and field errors.
 - One generic change handler dispatches an update by `name`.
 - The handler always dispatches `UPDATE_FIELD`. If that field already has an error, it also dispatches `SET_FIELD_ERROR` with the revalidated error or `undefined` supplied by the component.
@@ -802,8 +803,8 @@ Every field change returns the same metadata shape:
 - No field-specific change handlers are required.
 - `hasErrors` is derived with `Object.values(errors).some(Boolean)`; it is not stored separately.
 - `validateField.ts` contains the single shared field-validation function.
-- Its exact signature is `validateField(field: Field, value: FieldValue): string | undefined`.
-- If `value` is `null`, return `requiredErrorMessage` only when `isRequired` is true.
+- Its exact signature is `validateField(field: Field, value: FieldValue | undefined): string | undefined`.
+- If `value` is `undefined`, return `requiredErrorMessage` only when `isRequired` is true.
 - For `Input`, enforce the configured `min`, `max`, `integer`, and `maxDecimalPlaces` rules when present.
 - For `Select`, return `undefined` after the required check; the controlled component exposes only configured options.
 - Return `validation.errorMessage` for any non-required Input failure; otherwise return `undefined`.
@@ -823,7 +824,7 @@ Every field change returns the same metadata shape:
 ```
 
 - The mapper does not repeat configured business validation, call the API, or throw an error.
-- If required metadata is missing, `null`, or has the wrong primitive type, return `undefined`; do not return an incomplete DTO or use a type assertion.
+- If required metadata is missing, `undefined`, or has the wrong primitive type, return `undefined`; do not return an incomplete DTO or use a broad object assertion.
 - The mapper finds values by metadata `name`, never by array position.
 - The controlled Select stores only values from `field.options`. After confirming the mapped risk-band value is a string, the mapper performs the single approved `RiskBand` type assertion at the DTO boundary; it must not duplicate configured options in a hard-coded guard.
 - Changing labels, order, or options within the approved API contract does not require mapper changes. A change to the API risk-band enum remains a contract change and requires OpenAPI and DTO review.

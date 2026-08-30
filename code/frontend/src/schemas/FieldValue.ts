@@ -1,1 +1,1 @@
-export type FieldValue = number | string | null;
+export type FieldValue = number | string;

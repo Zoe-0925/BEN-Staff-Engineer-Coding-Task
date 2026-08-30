@@ -9,8 +9,8 @@ function hasMoreDecimalPlaces(value: number, maxDecimalPlaces: number): boolean 
   return Math.abs(scaledValue - Math.round(scaledValue)) > tolerance;
 }
 
-export function validateField(field: Field, value: FieldValue): string | undefined {
-  if (value === null) {
+export function validateField(field: Field, value: FieldValue | undefined): string | undefined {
+  if (value === undefined) {
     return field.isRequired ? field.requiredErrorMessage : undefined;
   }
 
