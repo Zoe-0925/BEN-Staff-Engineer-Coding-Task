@@ -1,0 +1,68 @@
+export const theme = {
+  colors: {
+    primary: '#870e40',
+    primaryDark: '#6f0b35',
+    primarySoft: '#fbf3f6',
+    surface: '#ffffff',
+    background: '#f7f4f5',
+    text: '#2b2025',
+    muted: '#6f6268',
+    border: '#cdbdc4',
+    borderSoft: '#eadfe4',
+    error: '#b42318',
+    errorSoft: '#fef3f2',
+    disabled: '#b9adb2',
+    spinnerTrack: 'rgb(255 255 255 / 45%)',
+  },
+  typography: {
+    fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+    fontSize: {
+      caption: '11px',
+      small: '12px',
+      bodySmall: '13px',
+      body: '14px',
+      control: '15px',
+      resultHeading: '18px',
+      systemHeading: '22px',
+      pageHeading: '30px',
+      systemCode: '48px',
+    },
+    fontWeight: {
+      regular: 400,
+      medium: 600,
+      label: 650,
+      bold: 700,
+      strong: 750,
+    },
+  },
+  spacing: {
+    xSmall: '4px',
+    small: '6px',
+    medium: '8px',
+    large: '10px',
+    xLarge: '12px',
+    xxLarge: '14px',
+    field: '22px',
+    fieldWithError: '17px',
+    section: '24px',
+    result: '32px',
+    page: '48px',
+  },
+  radii: {
+    small: '4px',
+    control: '6px',
+    card: '8px',
+    round: '50%',
+  },
+  sizes: {
+    controlHeight: '48px',
+    prefixWidth: '44px',
+    selectEndPadding: '42px',
+    spinner: '17px',
+  },
+  breakpoints: {
+    medium: '560px',
+  },
+} as const;
+
+export type Theme = typeof theme;
