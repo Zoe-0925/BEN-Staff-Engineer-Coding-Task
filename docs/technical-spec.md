@@ -173,7 +173,7 @@ code/frontend/src/
 │   ├── styled.d.ts
 │   └── theme.ts
 ├── utils/
-│   ├── mapRequestError.ts
+│   ├── handleRequestError.ts
 │   └── validateField.ts
 └── schemas/
     ├── CommissionQuoteDto.ts
@@ -968,7 +968,7 @@ State transitions:
 - `mapCommissionQuoteRequest` returns `undefined` for an incomplete structural mapping. It does not throw, log, or select an error page.
 - `commissionQuoteApi.ts` is the transport boundary: Axios may reject, the service logs the transport outcome and rethrows the original narrowed Axios error.
 - One Page submission handler maps metadata, calls the API, catches the Axios rejection, and converts every outcome into `RequestState`.
-- Keep status/code classification out of render branches and child components. Use the shared `utils/mapRequestError.ts` function for timeout, `400`, `401`, API `404`, `500`, `503`, network failures, malformed error responses, and unrecognised errors.
+- Keep status/code classification and caught-request error logging out of render branches and child components. Use the shared `utils/handleRequestError.ts` function for timeout, `400`, `401`, API `404`, `500`, `503`, network failures, malformed error responses, and unrecognised errors.
 - Expected recoverable failures become `serviceError`; mapping failures, `500`, malformed responses, network failures, and unrecognised errors become `unknownError`.
 - Missing config is handled by the Page before rendering the Form. It records `CONFIG_NOT_FOUND` and renders the approved `UnknownError` component without entering request state because no submission occurred.
 

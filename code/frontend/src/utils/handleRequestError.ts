@@ -1,6 +1,8 @@
 import axios from 'axios';
+import log from 'loglevel';
 
 import type { ErrorResponse } from '../schemas/CommissionQuoteDto';
+import type { LogEntry } from '../schemas/LogEntry';
 import type { RequestState } from '../schemas/RequestState';
 
 const TIMEOUT_MESSAGE = "We couldn't generate the quote. Please try again later.";
@@ -9,13 +11,27 @@ const EXPECTED_ERROR_CODES: Partial<Record<number, ErrorResponse['error']['code'
   400: 'VALIDATION_ERROR',
   401: 'UNAUTHORIZED',
   404: 'NOT_FOUND',
-  500: 'INTERNAL_ERROR',
   503: 'SERVICE_UNAVAILABLE',
 };
 
-export function mapRequestError(error: unknown, correlationId: string): RequestState {
+function handleUnknownError(correlationId: string, message: string): RequestState {
+  const unexpectedErrorLog: LogEntry = {
+    level: 'error',
+    event: 'UNEXPECTED_FRONTEND_ERROR',
+    message,
+    correlationId,
+  };
+  log.error(unexpectedErrorLog);
+
+  return { status: 'unknownError', correlationId };
+}
+
+export function handleRequestError(error: unknown, correlationId: string): RequestState {
   if (!axios.isAxiosError<ErrorResponse>(error)) {
-    return { status: 'unknownError', correlationId };
+    return handleUnknownError(
+      correlationId,
+      'Commission quote request failed with a non-Axios error.',
+    );
   }
 
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
@@ -30,16 +46,28 @@ export function mapRequestError(error: unknown, correlationId: string): RequestS
   const responseError = error.response?.data?.error;
 
   if (status === 500) {
-    return { status: 'unknownError', correlationId };
+    return handleUnknownError(
+      correlationId,
+      'Commission quote API returned an internal server error.',
+    );
+  }
+
+  if (!status) {
+    return handleUnknownError(
+      correlationId,
+      'Commission quote request failed without an HTTP response.',
+    );
   }
 
   if (
-    !status ||
     !responseError ||
     responseError.code !== EXPECTED_ERROR_CODES[status] ||
     typeof responseError.message !== 'string'
   ) {
-    return { status: 'unknownError', correlationId };
+    return handleUnknownError(
+      correlationId,
+      'Commission quote API returned an unrecognized or malformed error response.',
+    );
   }
 
   switch (status) {
@@ -59,6 +87,9 @@ export function mapRequestError(error: unknown, correlationId: string): RequestS
         message: responseError.message,
       };
     default:
-      return { status: 'unknownError', correlationId };
+      return handleUnknownError(
+        correlationId,
+        `Commission quote API returned unsupported HTTP status ${status}.`,
+      );
   }
 }

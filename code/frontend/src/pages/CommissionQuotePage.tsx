@@ -10,7 +10,7 @@ import type { FieldMetadata } from '../schemas/FieldMetadata';
 import type { LogEntry } from '../schemas/LogEntry';
 import type { RequestState } from '../schemas/RequestState';
 import { createCommissionQuote } from '../services/commissionQuoteApi';
-import { mapRequestError } from '../utils/mapRequestError';
+import { handleRequestError } from '../utils/handleRequestError';
 import {
   LoadingNote,
   LoadingPlaceholder,
@@ -72,20 +72,7 @@ export function CommissionQuotePage() {
       const response = await createCommissionQuote(request, correlationId);
       setRequestState({ status: 'success', correlationId, response });
     } catch (error: unknown) {
-      const nextRequestState = mapRequestError(error, correlationId);
-
-      if (nextRequestState.status === 'unknownError') {
-        const unexpectedErrorLog: LogEntry = {
-          level: 'error',
-          event: 'UNEXPECTED_FRONTEND_ERROR',
-          message:
-            'Commission quote request failed: unrecognized error, network failure, or malformed API response.',
-          correlationId,
-        };
-        log.error(unexpectedErrorLog);
-      }
-
-      setRequestState(nextRequestState);
+      setRequestState(handleRequestError(error, correlationId));
     }
   }
 
