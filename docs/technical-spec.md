@@ -243,13 +243,12 @@ export type RiskBand = "LOW" | "MEDIUM" | "HIGH";
 #### `FieldValue.ts`
 
 ```ts
-import type { RiskBand } from "./RiskBand";
-
-export type FieldValue = number | RiskBand | null;
+export type FieldValue = number | string | null;
 ```
 
 - Empty Input and Select values are `null`; they are never stored as empty strings.
 - `loanAmount` and `loanTermInMonths` are numbers in form state and in the request DTO.
+- Select option values are strings in generic form state. Domain narrowing occurs only at the DTO mapper boundary.
 
 #### `FieldMetadata.ts`
 
@@ -446,7 +445,7 @@ type InputProps = {
 // Select.tsx
 type SelectProps = {
   field: Field;
-  value: RiskBand | null;
+  value: string | null;
   error?: string;
   disabled: boolean;
   onChange: (field: FieldMetadata, error?: string) => void;
@@ -826,6 +825,8 @@ Every field change returns the same metadata shape:
 - The mapper does not repeat configured business validation, call the API, or throw an error.
 - If required metadata is missing, `null`, or has the wrong primitive type, return `undefined`; do not return an incomplete DTO or use a type assertion.
 - The mapper finds values by metadata `name`, never by array position.
+- The controlled Select stores only values from `field.options`. After confirming the mapped risk-band value is a string, the mapper performs the single approved `RiskBand` type assertion at the DTO boundary; it must not duplicate configured options in a hard-coded guard.
+- Changing labels, order, or options within the approved API contract does not require mapper changes. A change to the API risk-band enum remains a contract change and requires OpenAPI and DTO review.
 - `CommissionQuotePage` treats an `undefined` mapping result as an unexpected frontend failure and enters `unknownError` without calling the API.
 - The Generate quote button is disabled when `hasErrors` is true or the Page reports loading.
 - An untouched empty form has no displayed errors, so its button is enabled; selecting **Generate quote** runs full-form validation, stores required errors, and disables the button.

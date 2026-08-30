@@ -1,5 +1,6 @@
 import type { CommissionQuoteRequest } from '../schemas/CommissionQuoteDto';
 import type { FieldMetadata } from '../schemas/FieldMetadata';
+import type { RiskBand } from '../schemas/RiskBand';
 
 export function mapCommissionQuoteRequest(
   values: FieldMetadata[],
@@ -19,6 +20,7 @@ export function mapCommissionQuoteRequest(
   return {
     loanAmount,
     loanTermInMonths,
-    riskBand,
+    // The controlled Select stores only configured option values at this DTO boundary.
+    riskBand: riskBand as RiskBand,
   };
 }

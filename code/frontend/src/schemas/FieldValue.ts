@@ -1,3 +1,1 @@
-import type { RiskBand } from './RiskBand';
-
-export type FieldValue = number | RiskBand | null;
+export type FieldValue = number | string | null;
