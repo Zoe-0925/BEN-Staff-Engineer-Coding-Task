@@ -26,7 +26,8 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- Root `.gitignore`, `.prettierrc.json`, `package.json`, and lockfile.
+- Repository-root `.gitignore`.
+- `code/.prettierrc.json`, `code/package.json`, and `code/package-lock.json`.
 - Frontend build-root files listed in the Technical Spec.
 - Backend build-root files listed in the Technical Spec.
 - Frontend and backend `.env.example` files.
@@ -56,9 +57,9 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- `backend/test/commissionQuoteService.test.js`
-- `backend/src/schemas/commissionQuoteSchema.ts`
-- `backend/src/services/commissionQuoteService.ts`
+- `code/backend/test/commissionQuoteService.test.js`
+- `code/backend/src/schemas/commissionQuoteSchema.ts`
+- `code/backend/src/services/commissionQuoteService.ts`
 - Backend package configuration only if required to run the already approved Jest command.
 
 **Implementation order:**
@@ -86,12 +87,12 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- `backend/test/createCommissionQuoteRoute.test.js`
-- `backend/src/app.ts`
-- `backend/src/server.ts`
-- `backend/src/middleware/httpLogger.ts`
-- `backend/src/middleware/apiKeyAuth.ts`
-- `backend/src/routes/createCommissionQuoteRoute.ts`
+- `code/backend/test/createCommissionQuoteRoute.test.js`
+- `code/backend/src/app.ts`
+- `code/backend/src/server.ts`
+- `code/backend/src/middleware/httpLogger.ts`
+- `code/backend/src/middleware/apiKeyAuth.ts`
+- `code/backend/src/routes/createCommissionQuoteRoute.ts`
 - Existing backend schema and service only when required by the approved success flow.
 
 **Implementation order:**
@@ -119,8 +120,8 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- `backend/src/middleware/notFound.ts`
-- `backend/src/middleware/errorHandler.ts`
+- `code/backend/src/middleware/notFound.ts`
+- `code/backend/src/middleware/errorHandler.ts`
 - Existing backend route, schema, service, app, server, and logging middleware.
 
 **Implementation:**
@@ -151,13 +152,13 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- Every approved file under `frontend/src/schemas/`.
-- `frontend/src/config/commissionQuoteFormConfig.json`
-- `frontend/src/context/ConfigContext.tsx`
-- `frontend/src/hooks/useConfig.ts`
-- `frontend/src/utils/validateField.ts`
-- `frontend/src/mappers/commissionQuoteRequestMapper.ts`
-- `frontend/src/services/commissionQuoteApi.ts`
+- Every approved file under `code/frontend/src/schemas/`.
+- `code/frontend/src/config/commissionQuoteFormConfig.json`
+- `code/frontend/src/context/ConfigContext.tsx`
+- `code/frontend/src/hooks/useConfig.ts`
+- `code/frontend/src/utils/validateField.ts`
+- `code/frontend/src/mappers/commissionQuoteRequestMapper.ts`
+- `code/frontend/src/services/commissionQuoteApi.ts`
 
 **Implementation:**
 
@@ -186,13 +187,13 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- `frontend/src/components/Input/Input.tsx`
-- `frontend/src/components/Select/Select.tsx`
-- `frontend/src/components/Button/Button.tsx`
-- `frontend/src/components/CommissionQuoteForm/CommissionQuoteForm.tsx`
-- `frontend/src/styles/Grid.ts`
-- `frontend/src/styles/theme.ts`
-- `frontend/src/styles/styled.d.ts`
+- `code/frontend/src/components/Input/Input.tsx`
+- `code/frontend/src/components/Select/Select.tsx`
+- `code/frontend/src/components/Button/Button.tsx`
+- `code/frontend/src/components/CommissionQuoteForm/CommissionQuoteForm.tsx`
+- `code/frontend/src/styles/Grid.ts`
+- `code/frontend/src/styles/theme.ts`
+- `code/frontend/src/styles/styled.d.ts`
 
 **Implementation:**
 
@@ -223,10 +224,10 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- `frontend/src/pages/CommissionQuotePage.tsx`
-- `frontend/src/pages/CommissionQuotePage.styles.ts`
-- `frontend/src/components/CommissionQuoteResult/CommissionQuoteResult.tsx`
-- `frontend/src/components/UnknownError/UnknownError.tsx`
+- `code/frontend/src/pages/CommissionQuotePage.tsx`
+- `code/frontend/src/pages/CommissionQuotePage.styles.ts`
+- `code/frontend/src/components/CommissionQuoteResult/CommissionQuoteResult.tsx`
+- `code/frontend/src/components/UnknownError/UnknownError.tsx`
 - Existing frontend API service only if integration reveals a contract mismatch.
 
 **Implementation:**
@@ -255,16 +256,16 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Create or modify:**
 
-- `frontend/src/main.tsx`
-- `frontend/src/App.tsx`
-- `frontend/src/components/AppHeader/AppHeader.tsx`
-- `frontend/src/components/AppFooter/AppFooter.tsx`
-- `frontend/src/components/NotFound/NotFound.tsx`
-- `frontend/src/styles/GlobalStyle.ts`
-- `frontend/src/styles/theme.ts`
-- `frontend/src/styles/styled.d.ts`
+- `code/frontend/src/main.tsx`
+- `code/frontend/src/App.tsx`
+- `code/frontend/src/components/AppHeader/AppHeader.tsx`
+- `code/frontend/src/components/AppFooter/AppFooter.tsx`
+- `code/frontend/src/components/NotFound/NotFound.tsx`
+- `code/frontend/src/styles/GlobalStyle.ts`
+- `code/frontend/src/styles/theme.ts`
+- `code/frontend/src/styles/styled.d.ts`
 - Existing page and component files when presentation-only changes are required to match the mockups.
-- Copy `docs/brand-logo.svg` unchanged to `frontend/src/assets/brand-logo.svg`.
+- Copy `docs/brand-logo.svg` unchanged to `code/frontend/src/assets/brand-logo.svg`.
 
 **Implementation:**
 

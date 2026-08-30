@@ -14,7 +14,7 @@ Status: Ready for implementation
 - Do not replace the selected patterns with alternative abstractions.
 - Do not add, rename, move, or merge files unless the Technical Spec is updated first.
 - Do not invent missing config, component props, validation rules, or UI styles; leave them as TBD until confirmed.
-- Define shared config and domain schemas under `frontend/src/schemas/`.
+- Define shared config and domain schemas under `code/frontend/src/schemas/`.
 - Group frontend API DTOs in `CommissionQuoteDto.ts` and export them as named types.
 - For non-DTO schemas, the filename must match its exported type or interface name.
 - Define each component's prop type directly in its own `.tsx` file; do not create separate `*Props.ts` files.
@@ -26,7 +26,7 @@ Status: Ready for implementation
 
 ### OpenAPI contract
 
-- `backend/openapi.yaml` is the machine-readable API contract for the frontend and backend.
+- `code/backend/openapi.yaml` is the machine-readable API contract for the frontend and backend.
 - It defines the single `POST /api/commission-quotes` endpoint, `api-key` security, optional `x-correlation-id`, request and response schemas, and `200`, `400`, `401`, `404`, `500`, and `503` responses.
 - Frontend DTOs, backend DTOs, validation, response mapping, and tests must match this file.
 - When the API contract changes, update `openapi.yaml`, Functional Spec, and affected TypeScript types together before implementation.
@@ -40,7 +40,7 @@ Status: Ready for implementation
 - These are main-flow test drafts, not a commitment to exhaustive coverage.
 - Complete each numbered slice with red-green-refactor before starting the next.
 - Use only Jest. Do not install another test runner, test transformer, DOM test environment, React test library, HTTP test library, or API mocking library.
-- Write backend tests as plain JavaScript and run them against the TypeScript-compiled `backend/dist` output.
+- Write backend tests as plain JavaScript and run them against the TypeScript-compiled `code/backend/dist` output.
 - Do not add frontend automated tests in this MVP; verify the UI manually against the approved mockups and main flow.
 
 ### Implementation sequence
@@ -64,10 +64,7 @@ Complete only the ticket selected by the candidate, then stop for review. Do not
 ```text
 .
 ├── .gitignore
-├── .prettierrc.json
 ├── README.md
-├── package.json
-├── package-lock.json
 ├── docs/
 │   ├── brand-logo.svg
 │   ├── commission-quote-layout.html
@@ -79,14 +76,20 @@ Complete only the ticket selected by the candidate, then stop for review. Do not
 │   ├── implementation-plan.md
 │   ├── requirements-analysis.md
 │   └── technical-spec.md
-├── frontend/
-└── backend/
+└── code/
+    ├── .prettierrc.json
+    ├── package.json
+    ├── package-lock.json
+    ├── frontend/
+    └── backend/
 ```
 
 - Use Node.js 22 or later and npm.
-- Root `package.json` contains local orchestration scripts, the `concurrently` development dependency, and the repository-level Prettier dependency.
-- Root `.gitignore` ignores every `node_modules/`, `dist/`, `.env`, and local OS/editor file; it must not ignore either `.env.example`.
-- Root `.prettierrc.json` contains the exact formatting rules in Code Quality Instructions.
+- Repository-root `.gitignore` ignores every `node_modules/`, `dist/`, `.env`, and local OS/editor file; it must not ignore either `.env.example`.
+- All executable application code and npm tooling live under `code/`; documentation remains at the repository root.
+- `code/package.json` contains local orchestration scripts, the `concurrently` development dependency, and the code-workspace Prettier dependency.
+- `code/.prettierrc.json` contains the exact formatting rules in Code Quality Instructions.
+- Run application npm commands from `code/` unless a command explicitly states otherwise.
 
 ## 1. Frontend stack
 
@@ -108,7 +111,7 @@ Complete only the ticket selected by the candidate, then stop for review. Do not
 Frontend build root:
 
 ```text
-frontend/
+code/frontend/
 ├── .env.example
 ├── package.json
 ├── package-lock.json
@@ -126,7 +129,7 @@ frontend/
 Frontend source tree:
 
 ```text
-frontend/src/
+code/frontend/src/
 ├── App.tsx
 ├── main.tsx
 ├── vite-env.d.ts
@@ -480,14 +483,14 @@ type GridItemProps = {
 - Import the referenced shared types from `schemas/`.
 - `AppHeader`, `AppFooter`, and `NotFound` take no props.
 - None of these prop types belongs in `schemas/`.
-- `backend/openapi.yaml` already exists at the backend root and remains outside `backend/src/`.
+- `code/backend/openapi.yaml` already exists at the backend root and remains outside `code/backend/src/`.
 
 ### Build and application entry
 
-Create the frontend with:
+Create the frontend from the repository root with:
 
 ```bash
-npm create vite@latest frontend -- --template react-ts
+npm create vite@latest code/frontend -- --template react-ts
 ```
 
 Required npm scripts:
@@ -503,7 +506,7 @@ npm run lint      → run ESLint
 
 ### Frontend HTTP configuration
 
-- `VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:5000` is stored in `frontend/.env.example`.
+- `VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:5000` is stored in `code/frontend/.env.example`.
 - `commissionQuoteApi.ts` creates one module-level Axios instance with that `baseURL` and `timeout: 60000`.
 - It exports `createCommissionQuote(request: CommissionQuoteRequest, correlationId: string): Promise<CommissionQuoteResponse>`.
 - It calls `POST /api/commission-quotes` with the request DTO and the confirmed headers.
@@ -529,7 +532,7 @@ index.html
 - `main.tsx` is the browser entry point and mounts React with `createRoot`.
 - `main.tsx` contains app-level providers only; it does not contain page or business logic.
 - `App.tsx` renders `AppHeader`, the route switch, and `AppFooter`.
-- Copy the approved `docs/brand-logo.svg` unchanged to `frontend/src/assets/brand-logo.svg` during implementation.
+- Copy the approved `docs/brand-logo.svg` unchanged to `code/frontend/src/assets/brand-logo.svg` during implementation.
 
 ## 3. Component structure
 
@@ -944,8 +947,8 @@ State transitions:
 ## 10. API error and timeout handling
 
 - Do not implement staff login, OIDC, an API-key input, or an authentication route.
-- Commit `frontend/.env.example` containing `VITE_COMMISSION_QUOTE_API_KEY=local-demo-key`.
-- Commit `backend/.env.example` containing `COMMISSION_QUOTE_API_KEY=local-demo-key` and an unset `MOCK_API_ERROR_CODE` example.
+- Commit `code/frontend/.env.example` containing `VITE_COMMISSION_QUOTE_API_KEY=local-demo-key`.
+- Commit `code/backend/.env.example` containing `COMMISSION_QUOTE_API_KEY=local-demo-key` and an unset `MOCK_API_ERROR_CODE` example.
 - The reviewer copies each `.env.example` to `.env`; both local values must match for successful requests.
 - Ignore all real `.env` files in Git. Do not commit a real credential.
 - `commissionQuoteApi.ts` reads `VITE_COMMISSION_QUOTE_API_KEY` and automatically sends it as the `api-key` header.
@@ -1094,7 +1097,7 @@ State transitions:
 ### Required backend file structure
 
 ```text
-backend/
+code/backend/
 ├── .env.example
 ├── eslint.config.js
 ├── openapi.yaml
@@ -1189,7 +1192,7 @@ After registering the quote route, `app.ts` registers `notFound` and then `error
 - Frontend URL: `http://localhost:3000`.
 - Backend URL: `http://localhost:5000`.
 - Vite must use port `3000` with `strictPort: true`.
-- Backend uses `PORT=5000` from `backend/.env.example`.
+- Backend uses `PORT=5000` from `code/backend/.env.example`.
 - The Axios base URL is `http://localhost:5000` through `VITE_COMMISSION_QUOTE_API_BASE_URL`.
 - Use application-level `cors()` with origin `*` for this local MVP and do not enable credentials.
 - Allow `POST` and `OPTIONS`; allow `Content-Type`, `api-key`, and `x-correlation-id` request headers.
@@ -1198,7 +1201,7 @@ After registering the quote route, `app.ts` registers `notFound` and then `error
 
 ## 15. npm scripts and local orchestration
 
-Root `package.json`:
+Code-workspace `code/package.json`:
 
 ```text
 npm run dev          → run UI and API together with concurrently
@@ -1208,10 +1211,11 @@ npm run format       → apply Prettier to frontend/src, backend/src, and backen
 npm run format:check → verify formatting without changing files
 ```
 
-- Root `dev` uses the local `concurrently` dev dependency and stops both processes when either one fails.
+- Run these scripts from `code/`.
+- The code-workspace `dev` script uses the local `concurrently` dev dependency and stops both processes when either one fails.
 - `dev:ui` runs `npm --prefix frontend run dev`.
 - `dev:api` runs `npm --prefix backend run dev`.
-- `format` and `format:check` use the root Prettier configuration and do not rewrite reviewed Markdown, HTML mockups, SVG, or OpenAPI.
+- `format` and `format:check` use `code/.prettierrc.json` and do not rewrite reviewed Markdown, HTML mockups, SVG, or OpenAPI.
 - Use the valid npm syntax `npm run dev:ui` and `npm run dev:api` in documentation and scripts.
 
 Backend `package.json`:
@@ -1224,8 +1228,8 @@ npm test       → npm run build, then run jest against backend/test
 npm run lint   → eslint src --max-warnings=0
 ```
 
-- `backend/eslint.config.js` is the flat ESLint configuration for backend TypeScript source files; do not add a Jest ESLint plugin for the two plain-JavaScript tests.
-- Backend tests are plain JavaScript and import the compiled CommonJS modules from `backend/dist`.
+- `code/backend/eslint.config.js` is the flat ESLint configuration for backend TypeScript source files; do not add a Jest ESLint plugin for the two plain-JavaScript tests.
+- Backend tests are plain JavaScript and import the compiled CommonJS modules from `code/backend/dist`.
 - `commissionQuoteService.test.js` covers the approved successful calculation.
 - `createCommissionQuoteRoute.test.js` starts the compiled Express app on an ephemeral port, sends a valid request with Node's built-in `fetch`, asserts `200`, the response contract, and correlation header, then closes the server.
 - Both tests use the canonical `500000 / 360 / LOW` request and expected values documented in the Functional Spec/OpenAPI example; assert `quoteId` by UUID shape, not a fixed value.

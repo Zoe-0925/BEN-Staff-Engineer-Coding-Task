@@ -24,7 +24,7 @@ Implementation must follow these reviewed artifacts:
 - [Technical Spec](docs/technical-spec.md)
 - [Code Quality Instructions](docs/code-quality-instructions.md)
 - [Implementation Plan](docs/implementation-plan.md)
-- [OpenAPI contract](backend/openapi.yaml)
+- [OpenAPI contract](code/backend/openapi.yaml)
 - [Decision Log](docs/decision-log.md)
 - [Evaluation Signals](docs/evaluation-signals.md)
 - [Success UI mockup](docs/commission-quote-layout.html)
@@ -55,13 +55,13 @@ Prerequisite: Node.js 22 or later and npm.
 The committed examples will contain:
 
 ```text
-frontend/.env.example
+code/frontend/.env.example
 VITE_COMMISSION_QUOTE_API_KEY=local-demo-key
 VITE_COMMISSION_QUOTE_API_BASE_URL=http://localhost:5000
 ```
 
 ```text
-backend/.env.example
+code/backend/.env.example
 PORT=5000
 COMMISSION_QUOTE_API_KEY=local-demo-key
 MOCK_API_ERROR_CODE=
@@ -70,15 +70,21 @@ MOCK_API_ERROR_CODE=
 Copy each `.env.example` to `.env` before running the application. The frontend and backend API-key values must match.
 
 ```bash
-cp frontend/.env.example frontend/.env
-cp backend/.env.example backend/.env
+cp code/frontend/.env.example code/frontend/.env
+cp code/backend/.env.example code/backend/.env
 ```
 
 Real `.env` files must remain Git-ignored. The browser-visible key is an accepted demo limitation; a production Vendor key would remain behind a BFF or API gateway.
 
 ## Run locally
 
-Install dependencies from the project root:
+Enter the code workspace from the repository root:
+
+```bash
+cd code
+```
+
+Install dependencies from `code/`:
 
 ```bash
 npm install
@@ -103,7 +109,7 @@ npm run dev:api
 - API: `http://localhost:5000`
 - Postman: `POST http://localhost:5000/api/commission-quotes`
 
-Code-quality commands from the project root:
+Code-quality commands from `code/`:
 
 ```bash
 npm run format:check
@@ -160,7 +166,7 @@ Frontend UI behaviour is verified manually against the approved mockups and succ
 Backend test command:
 
 ```bash
-cd backend
+cd code/backend
 npm test
 ```
 

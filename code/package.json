@@ -1,0 +1,16 @@
+{
+  "name": "commission-quote-app",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail \"npm run dev:ui\" \"npm run dev:api\"",
+    "dev:ui": "npm --prefix frontend run dev",
+    "dev:api": "npm --prefix backend run dev",
+    "format": "prettier --write --no-error-on-unmatched-pattern \"frontend/src/**/*.{ts,tsx,json}\" \"backend/src/**/*.ts\" \"backend/test/**/*.js\"",
+    "format:check": "prettier --check --no-error-on-unmatched-pattern \"frontend/src/**/*.{ts,tsx,json}\" \"backend/src/**/*.ts\" \"backend/test/**/*.js\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "prettier": "^3.9.6"
+  }
+}
