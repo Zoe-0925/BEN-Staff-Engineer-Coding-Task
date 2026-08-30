@@ -822,7 +822,8 @@ Every field change returns the same metadata shape:
 }
 ```
 
-- The mapper performs mapping only; it does not validate fields or call the API.
+- The mapper does not repeat configured business validation or call the API.
+- As a typed mapping boundary, it must fail clearly if required metadata is missing, `null`, or has the wrong primitive type; it must not use a type assertion to return an incomplete DTO.
 - The mapper finds values by metadata `name`, never by array position.
 - `CommissionQuoteForm` calls `onSubmit(requestDto)` only after validation and mapping succeed.
 - The Generate quote button is disabled when `hasErrors` is true or the Page reports loading.
