@@ -1,0 +1,401 @@
+<div id="commission-quote-layout">
+  <style>
+    #commission-quote-layout {
+      --cq-plum: #870e40;
+      --cq-plum-dark: #6f0b35;
+      --cq-plum-soft: #fbf3f6;
+      --cq-white: #ffffff;
+      --cq-ink: #2b2025;
+      --cq-muted: #6f6268;
+      --cq-border: #cdbdc4;
+      --cq-border-soft: #eadfe4;
+      color-scheme: light;
+      width: 100%;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: var(--cq-white);
+      color: var(--cq-ink);
+    }
+
+    #commission-quote-layout * {
+      box-sizing: border-box;
+    }
+
+    #commission-quote-layout .cq-figma-label {
+      width: min(100%, 760px);
+      margin: 0 auto 8px;
+      color: var(--cq-plum);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    #commission-quote-layout .cq-artboard {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: min(100%, 760px);
+      min-height: 980px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--cq-border-soft);
+      background: var(--cq-white);
+    }
+
+    #commission-quote-layout .cq-artboard-name {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      color: var(--cq-muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    #commission-quote-layout .cq-page {
+      flex: 1;
+      width: min(520px, calc(100% - 64px));
+      margin: 30px auto 48px;
+    }
+
+    #commission-quote-layout .cq-width-measure {
+      position: relative;
+      height: 28px;
+      margin-bottom: 16px;
+      color: var(--cq-muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    #commission-quote-layout .cq-width-measure::before {
+      content: "";
+      position: absolute;
+      top: 14px;
+      left: 0;
+      right: 0;
+      border-top: 1px solid currentColor;
+    }
+
+    #commission-quote-layout .cq-width-measure::after {
+      content: "520 px content width";
+      position: relative;
+      padding: 0 8px;
+      background: var(--cq-white);
+    }
+
+    #commission-quote-layout .cq-app-header {
+      display: flex;
+      align-items: center;
+      height: 64px;
+      margin-top: 40px;
+      border-bottom: 1px solid var(--cq-border-soft);
+    }
+
+    #commission-quote-layout .cq-app-header-inner {
+      display: flex;
+      align-items: center;
+      width: min(100%, 696px);
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    #commission-quote-layout .cq-logo {
+      width: 36px;
+      height: 36px;
+      display: block;
+    }
+
+    #commission-quote-layout .cq-product-name {
+      margin-left: 12px;
+      color: var(--cq-ink);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    #commission-quote-layout .cq-header-divider {
+      margin: 0 10px;
+      color: var(--cq-border);
+    }
+
+    #commission-quote-layout .cq-current-page {
+      color: var(--cq-plum);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    #commission-quote-layout .cq-heading {
+      margin: 0;
+      color: var(--cq-plum);
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+
+    #commission-quote-layout .cq-intro {
+      margin: 10px 0 28px;
+      color: var(--cq-muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    #commission-quote-layout .cq-field {
+      position: relative;
+      margin-bottom: 22px;
+    }
+
+    #commission-quote-layout .cq-field-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--cq-ink);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    #commission-quote-layout .cq-required {
+      color: var(--cq-plum);
+    }
+
+    #commission-quote-layout .cq-control {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 48px;
+      border: 1px solid var(--cq-border);
+      border-radius: 6px;
+      background: var(--cq-white);
+      color: var(--cq-ink);
+      font-size: 15px;
+    }
+
+    #commission-quote-layout .cq-prefix {
+      display: grid;
+      width: 44px;
+      height: 100%;
+      place-items: center;
+      border-right: 1px solid var(--cq-border-soft);
+      background: var(--cq-plum-soft);
+      color: var(--cq-plum);
+    }
+
+    #commission-quote-layout .cq-value {
+      flex: 1;
+      padding: 0 14px;
+    }
+
+    #commission-quote-layout .cq-suffix {
+      padding-right: 14px;
+      color: var(--cq-muted);
+      font-size: 13px;
+    }
+
+    #commission-quote-layout .cq-chevron {
+      padding-right: 15px;
+      color: var(--cq-plum);
+      font-size: 12px;
+    }
+
+    #commission-quote-layout .cq-height-note {
+      position: absolute;
+      top: 30px;
+      right: -52px;
+      color: var(--cq-muted);
+      font-size: 10px;
+      font-weight: 700;
+      writing-mode: vertical-rl;
+    }
+
+    #commission-quote-layout .cq-submit {
+      display: grid;
+      width: 100%;
+      height: 48px;
+      margin-top: 4px;
+      place-items: center;
+      border: 0;
+      border-radius: 6px;
+      background: var(--cq-plum);
+      color: var(--cq-white);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    #commission-quote-layout .cq-result-gap {
+      position: relative;
+      height: 32px;
+    }
+
+    #commission-quote-layout .cq-result-gap span {
+      position: absolute;
+      top: 8px;
+      right: -44px;
+      color: var(--cq-muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    #commission-quote-layout .cq-result {
+      border: 1px solid var(--cq-border);
+      border-radius: 8px;
+      background: var(--cq-white);
+      padding: 24px;
+    }
+
+    #commission-quote-layout .cq-result-title {
+      margin: 0 0 18px;
+      color: var(--cq-plum);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    #commission-quote-layout .cq-result-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--cq-border-soft);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    #commission-quote-layout .cq-result-row:last-child {
+      padding-top: 14px;
+      border-bottom: 0;
+      font-size: 15px;
+      font-weight: 750;
+    }
+
+    #commission-quote-layout .cq-result-key {
+      color: var(--cq-muted);
+    }
+
+    #commission-quote-layout .cq-result-value {
+      color: var(--cq-ink);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    #commission-quote-layout .cq-page-padding-note {
+      position: absolute;
+      top: 74px;
+      left: 12px;
+      color: var(--cq-muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    #commission-quote-layout .cq-result-row:last-child .cq-result-value {
+      color: var(--cq-plum);
+    }
+
+    #commission-quote-layout .cq-footer {
+      display: flex;
+      min-height: 60px;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--cq-border-soft);
+      color: var(--cq-muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 560px) {
+      #commission-quote-layout .cq-artboard {
+        min-height: 920px;
+      }
+
+      #commission-quote-layout .cq-page {
+        width: calc(100% - 32px);
+      }
+
+      #commission-quote-layout .cq-app-header-inner {
+        padding: 0 16px;
+      }
+
+      #commission-quote-layout .cq-width-measure::after {
+        content: "520 px max · 16 px mobile gutters";
+      }
+
+      #commission-quote-layout .cq-height-note,
+      #commission-quote-layout .cq-result-gap span,
+      #commission-quote-layout .cq-page-padding-note {
+        display: none;
+      }
+    }
+  </style>
+
+  <div class="cq-figma-label">Commission Quote · layout specification</div>
+  <section class="cq-artboard" aria-label="Commission quote desktop layout mockup">
+    <div class="cq-artboard-name">Desktop frame · 1440 × 1024</div>
+    <div class="cq-page-padding-note">48 px page top</div>
+
+    <header class="cq-app-header" aria-label="Application header">
+      <div class="cq-app-header-inner">
+        <img class="cq-logo" src="./brand-logo.svg" alt="Placeholder B logo">
+        <span class="cq-product-name">Home loans</span>
+        <span class="cq-header-divider" aria-hidden="true">/</span>
+        <span class="cq-current-page" aria-current="page">Commission quote</span>
+      </div>
+    </header>
+
+    <main class="cq-page">
+      <div class="cq-width-measure" aria-label="Maximum content width 520 pixels"></div>
+
+      <h1 class="cq-heading">Commission quote</h1>
+      <p class="cq-intro">Enter the loan details to generate a commission quote.</p>
+
+      <div class="cq-field">
+        <span class="cq-field-label">Loan amount <span class="cq-required">*</span></span>
+        <div class="cq-control">
+          <span class="cq-prefix">$</span>
+          <span class="cq-value">500,000.00</span>
+        </div>
+        <span class="cq-height-note">48 px field</span>
+      </div>
+
+      <div class="cq-field">
+        <span class="cq-field-label">Loan term <span class="cq-required">*</span></span>
+        <div class="cq-control">
+          <span class="cq-value">360</span>
+          <span class="cq-suffix">months</span>
+        </div>
+      </div>
+
+      <div class="cq-field">
+        <span class="cq-field-label">Risk band <span class="cq-required">*</span></span>
+        <div class="cq-control">
+          <span class="cq-value">Low</span>
+          <span class="cq-chevron">▼</span>
+        </div>
+      </div>
+
+      <div class="cq-submit">Generate quote</div>
+      <div class="cq-result-gap"><span>32 px</span></div>
+
+      <section class="cq-result" aria-label="Successful quote result">
+        <h2 class="cq-result-title">Quote result</h2>
+        <div class="cq-result-row">
+          <span class="cq-result-key">Quote ID</span>
+          <span class="cq-result-value">550e8400…40000</span>
+        </div>
+        <div class="cq-result-row">
+          <span class="cq-result-key">Commission rate</span>
+          <span class="cq-result-value">0.1%</span>
+        </div>
+        <div class="cq-result-row">
+          <span class="cq-result-key">Upfront commission</span>
+          <span class="cq-result-value">$500.00</span>
+        </div>
+        <div class="cq-result-row">
+          <span class="cq-result-key">Monthly trail commission</span>
+          <span class="cq-result-value">$41.67</span>
+        </div>
+        <div class="cq-result-row">
+          <span class="cq-result-key">Total commission</span>
+          <span class="cq-result-value">$15,501.20</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="cq-footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+</div>

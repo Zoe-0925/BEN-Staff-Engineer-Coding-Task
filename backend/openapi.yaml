@@ -1,0 +1,245 @@
+openapi: 3.0.3
+
+info:
+  title: Commission Quote API
+  version: 1.0.0
+  description: Mock external Vendor API for generating commission quotes.
+
+tags:
+  - name: Commission Quotes
+
+paths:
+  /api/commission-quotes:
+    post:
+      tags:
+        - Commission Quotes
+      summary: Generate a commission quote
+      operationId: createCommissionQuote
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommissionQuoteRequest"
+            example:
+              loanAmount: 500000.00
+              loanTermInMonths: 360
+              riskBand: LOW
+      responses:
+        "200":
+          description: Commission quote generated successfully.
+          headers:
+            x-correlation-id:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionQuoteResponse"
+              example:
+                quoteId: 550e8400-e29b-41d4-a716-446655440000
+                commissionRate: 0.001
+                upfrontCommission: 500.00
+                monthlyTrailCommission: 41.67
+                totalCommission: 15501.20
+        "400":
+          description: The request body is malformed or contains invalid fields.
+          headers:
+            x-correlation-id:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: VALIDATION_ERROR
+                  message: Check the loan details and try again.
+                  fieldErrors:
+                    loanAmount: Please enter a valid loan amount.
+        "401":
+          description: The API key is missing or invalid.
+          headers:
+            x-correlation-id:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: UNAUTHORIZED
+                  message: We couldn't authenticate the quote request. Please contact your administrator.
+        "404":
+          description: The requested API route was not found.
+          headers:
+            x-correlation-id:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: The requested resource was not found.
+        "500":
+          description: An unexpected API error occurred.
+          headers:
+            x-correlation-id:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: Something went wrong. Please contact your administrator.
+        "503":
+          description: The quote service is temporarily unavailable.
+          headers:
+            x-correlation-id:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: SERVICE_UNAVAILABLE
+                  message: The quote service is temporarily unavailable. Please try again later.
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: api-key
+
+  parameters:
+    CorrelationId:
+      name: x-correlation-id
+      in: header
+      required: false
+      description: Optional caller-generated UUID. The API creates one when the value is absent or invalid.
+      schema:
+        type: string
+        format: uuid
+
+  headers:
+    CorrelationId:
+      description: Correlation ID used for this request.
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    CommissionQuoteRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - loanAmount
+        - loanTermInMonths
+        - riskBand
+      properties:
+        loanAmount:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000
+          multipleOf: 0.01
+          description: Loan amount in AUD with no more than two decimal places.
+          example: 500000.00
+        loanTermInMonths:
+          type: integer
+          minimum: 1
+          maximum: 360
+          description: Loan term in whole months.
+          example: 360
+        riskBand:
+          $ref: "#/components/schemas/RiskBand"
+
+    CommissionQuoteResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - quoteId
+        - commissionRate
+        - upfrontCommission
+        - monthlyTrailCommission
+        - totalCommission
+      properties:
+        quoteId:
+          type: string
+          format: uuid
+        commissionRate:
+          type: number
+          format: double
+          enum:
+            - 0.001
+            - 0.002
+            - 0.003
+        upfrontCommission:
+          type: number
+          format: double
+          description: Upfront commission in AUD, rounded to two decimal places.
+        monthlyTrailCommission:
+          type: number
+          format: double
+          description: Monthly trail commission in AUD, rounded to two decimal places.
+        totalCommission:
+          type: number
+          format: double
+          description: Total commission in AUD, rounded to two decimal places.
+
+    RiskBand:
+      type: string
+      enum:
+        - LOW
+        - MEDIUM
+        - HIGH
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - error
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorDetail"
+
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - VALIDATION_ERROR
+            - UNAUTHORIZED
+            - NOT_FOUND
+            - INTERNAL_ERROR
+            - SERVICE_UNAVAILABLE
+        message:
+          type: string
+        fieldErrors:
+          $ref: "#/components/schemas/FieldErrors"
+
+    FieldErrors:
+      type: object
+      additionalProperties: false
+      properties:
+        loanAmount:
+          type: string
+        loanTermInMonths:
+          type: string
+        riskBand:
+          type: string

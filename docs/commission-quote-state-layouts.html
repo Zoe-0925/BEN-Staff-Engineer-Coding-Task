@@ -1,0 +1,306 @@
+<div id="commission-quote-states">
+  <style>
+    #commission-quote-states {
+      --plum: #870e40;
+      --plum-soft: #fbf3f6;
+      --white: #ffffff;
+      --ink: #2b2025;
+      --muted: #6f6268;
+      --border: #cdbdc4;
+      --border-soft: #eadfe4;
+      --error: #b42318;
+      --error-soft: #fef3f2;
+      color-scheme: light;
+      width: 100%;
+      padding: 24px 0;
+      background: #f7f4f5;
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    #commission-quote-states * { box-sizing: border-box; }
+    #commission-quote-states .state-label {
+      width: min(100%, 760px);
+      margin: 24px auto 8px;
+      color: var(--plum);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    #commission-quote-states .artboard {
+      display: flex;
+      flex-direction: column;
+      width: min(100%, 760px);
+      min-height: 900px;
+      margin: 0 auto 40px;
+      border: 1px solid var(--border-soft);
+      background: var(--white);
+    }
+    #commission-quote-states .header {
+      display: flex;
+      align-items: center;
+      height: 64px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    #commission-quote-states .header-inner {
+      display: flex;
+      align-items: center;
+      width: min(100%, 696px);
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    #commission-quote-states .logo { display: block; width: 36px; height: 36px; }
+    #commission-quote-states .product { margin-left: 12px; font-size: 14px; font-weight: 700; }
+    #commission-quote-states .divider { margin: 0 10px; color: var(--border); }
+    #commission-quote-states .current { color: var(--plum); font-size: 14px; font-weight: 700; }
+    #commission-quote-states .page {
+      flex: 1;
+      width: min(520px, calc(100% - 64px));
+      margin: 48px auto;
+    }
+    #commission-quote-states h1 {
+      margin: 0;
+      color: var(--plum);
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -.025em;
+      line-height: 1.2;
+    }
+    #commission-quote-states .intro {
+      margin: 10px 0 28px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #commission-quote-states .field { margin-bottom: 22px; }
+    #commission-quote-states .field.has-error { margin-bottom: 17px; }
+    #commission-quote-states .label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    #commission-quote-states .required { color: var(--plum); }
+    #commission-quote-states .control {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 48px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 15px;
+    }
+    #commission-quote-states .control.error { border: 2px solid var(--error); }
+    #commission-quote-states .control.disabled { background: #f7f4f5; color: var(--muted); }
+    #commission-quote-states .prefix {
+      display: grid;
+      width: 44px;
+      height: 100%;
+      place-items: center;
+      border-right: 1px solid var(--border-soft);
+      background: var(--plum-soft);
+      color: var(--plum);
+    }
+    #commission-quote-states .value { flex: 1; padding: 0 14px; }
+    #commission-quote-states .suffix { padding-right: 14px; color: var(--muted); font-size: 13px; }
+    #commission-quote-states .chevron { padding-right: 15px; color: var(--plum); font-size: 12px; }
+    #commission-quote-states .field-error {
+      display: block;
+      margin-top: 6px;
+      color: var(--error);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    #commission-quote-states .alert {
+      margin: -8px 0 24px;
+      padding: 13px 14px;
+      border-left: 4px solid var(--error);
+      border-radius: 4px;
+      background: var(--error-soft);
+      color: var(--error);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+    #commission-quote-states .submit {
+      display: flex;
+      width: 100%;
+      height: 48px;
+      margin-top: 4px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--plum);
+      color: var(--white);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    #commission-quote-states .submit.disabled { background: #b9adb2; }
+    #commission-quote-states .spinner {
+      width: 17px;
+      height: 17px;
+      border: 2px solid rgba(255,255,255,.45);
+      border-top-color: var(--white);
+      border-radius: 50%;
+    }
+    #commission-quote-states .loading-note {
+      margin: 8px 0 0;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    #commission-quote-states .result-loading {
+      display: grid;
+      min-height: 112px;
+      margin-top: 32px;
+      padding: 24px;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+    }
+    #commission-quote-states .result-placeholder {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    #commission-quote-states .system-page {
+      display: grid;
+      flex: 1;
+      width: min(520px, calc(100% - 64px));
+      margin: 0 auto;
+      place-content: center;
+      text-align: center;
+    }
+    #commission-quote-states .system-code {
+      margin: 0 0 8px;
+      color: var(--plum);
+      font-size: 48px;
+      font-weight: 750;
+      line-height: 1;
+    }
+    #commission-quote-states .system-title {
+      margin: 0;
+      color: var(--ink);
+      font-size: 22px;
+      line-height: 1.3;
+    }
+    #commission-quote-states .system-copy {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #commission-quote-states .correlation {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    #commission-quote-states .footer {
+      display: flex;
+      min-height: 60px;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border-soft);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 560px) {
+      #commission-quote-states .artboard { min-height: 820px; }
+      #commission-quote-states .page,
+      #commission-quote-states .system-page { width: calc(100% - 32px); }
+    }
+  </style>
+
+  <div class="state-label">Validation error · required and invalid</div>
+  <section class="artboard" aria-label="Validation error mockup">
+    <header class="header"><div class="header-inner"><img class="logo" src="./brand-logo.svg" alt="Placeholder B logo"><span class="product">Home loans</span><span class="divider">/</span><span class="current">Commission quote</span></div></header>
+    <main class="page">
+      <h1>Commission quote</h1><p class="intro">Enter the loan details to generate a commission quote.</p>
+      <div class="field has-error"><span class="label">Loan amount <span class="required">*</span></span><div class="control error"><span class="prefix">$</span><span class="value"></span></div><span class="field-error">Please enter the loan amount.</span></div>
+      <div class="field has-error"><span class="label">Loan term <span class="required">*</span></span><div class="control error"><span class="value">480</span><span class="suffix">months</span></div><span class="field-error">The loan term must be between 1 and 360 months.</span></div>
+      <div class="field"><span class="label">Risk band <span class="required">*</span></span><div class="control"><span class="value">Low</span><span class="chevron">▼</span></div></div>
+      <div class="submit disabled">Generate quote</div>
+    </main>
+    <footer class="footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+
+  <div class="state-label">Loading</div>
+  <section class="artboard" aria-label="Loading mockup">
+    <header class="header"><div class="header-inner"><img class="logo" src="./brand-logo.svg" alt="Placeholder B logo"><span class="product">Home loans</span><span class="divider">/</span><span class="current">Commission quote</span></div></header>
+    <main class="page">
+      <h1>Commission quote</h1><p class="intro">Enter the loan details to generate a commission quote.</p>
+      <div class="field"><span class="label">Loan amount <span class="required">*</span></span><div class="control disabled"><span class="prefix">$</span><span class="value">500,000.00</span></div></div>
+      <div class="field"><span class="label">Loan term <span class="required">*</span></span><div class="control disabled"><span class="value">360</span><span class="suffix">months</span></div></div>
+      <div class="field"><span class="label">Risk band <span class="required">*</span></span><div class="control disabled"><span class="value">Low</span><span class="chevron">▼</span></div></div>
+      <div class="submit disabled"><span class="spinner" aria-hidden="true"></span>Generating quote...</div>
+      <p class="loading-note">We are generating your commission quote. This may take a moment.</p>
+      <section class="result-loading" aria-label="Quote result loading">
+        <p class="result-placeholder">Loading...</p>
+      </section>
+    </main>
+    <footer class="footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+
+  <div class="state-label">API timeout</div>
+  <section class="artboard" aria-label="API timeout mockup">
+    <header class="header"><div class="header-inner"><img class="logo" src="./brand-logo.svg" alt="Placeholder B logo"><span class="product">Home loans</span><span class="divider">/</span><span class="current">Commission quote</span></div></header>
+    <main class="page">
+      <h1>Commission quote</h1><p class="intro">Enter the loan details to generate a commission quote.</p>
+      <div class="alert" role="alert">We couldn't generate the quote. Please try again later.</div>
+      <div class="field"><span class="label">Loan amount <span class="required">*</span></span><div class="control"><span class="prefix">$</span><span class="value">500,000.00</span></div></div>
+      <div class="field"><span class="label">Loan term <span class="required">*</span></span><div class="control"><span class="value">360</span><span class="suffix">months</span></div></div>
+      <div class="field"><span class="label">Risk band <span class="required">*</span></span><div class="control"><span class="value">Low</span><span class="chevron">▼</span></div></div>
+      <div class="submit">Generate quote</div>
+    </main>
+    <footer class="footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+
+  <div class="state-label">Service unavailable · 503</div>
+  <section class="artboard" aria-label="Service unavailable mockup">
+    <header class="header"><div class="header-inner"><img class="logo" src="./brand-logo.svg" alt="Placeholder B logo"><span class="product">Home loans</span><span class="divider">/</span><span class="current">Commission quote</span></div></header>
+    <main class="page">
+      <h1>Commission quote</h1><p class="intro">Enter the loan details to generate a commission quote.</p>
+      <div class="alert" role="alert">The quote service is temporarily unavailable. Please try again later.</div>
+      <div class="field"><span class="label">Loan amount <span class="required">*</span></span><div class="control"><span class="prefix">$</span><span class="value">500,000.00</span></div></div>
+      <div class="field"><span class="label">Loan term <span class="required">*</span></span><div class="control"><span class="value">360</span><span class="suffix">months</span></div></div>
+      <div class="field"><span class="label">Risk band <span class="required">*</span></span><div class="control"><span class="value">Low</span><span class="chevron">▼</span></div></div>
+      <div class="submit">Generate quote</div>
+    </main>
+    <footer class="footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+
+  <div class="state-label">API key error</div>
+  <section class="artboard" aria-label="API key error mockup">
+    <header class="header"><div class="header-inner"><img class="logo" src="./brand-logo.svg" alt="Placeholder B logo"><span class="product">Home loans</span><span class="divider">/</span><span class="current">Commission quote</span></div></header>
+    <main class="page">
+      <h1>Commission quote</h1><p class="intro">Enter the loan details to generate a commission quote.</p>
+      <div class="alert" role="alert">We couldn't authenticate the quote request. Please contact your administrator.</div>
+      <div class="field"><span class="label">Loan amount <span class="required">*</span></span><div class="control"><span class="prefix">$</span><span class="value">500,000.00</span></div></div>
+      <div class="field"><span class="label">Loan term <span class="required">*</span></span><div class="control"><span class="value">360</span><span class="suffix">months</span></div></div>
+      <div class="field"><span class="label">Risk band <span class="required">*</span></span><div class="control"><span class="value">Low</span><span class="chevron">▼</span></div></div>
+      <div class="submit">Generate quote</div>
+    </main>
+    <footer class="footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+
+  <div class="state-label">404 · Not found</div>
+  <section class="artboard" aria-label="Page not found mockup">
+    <header class="header"><div class="header-inner"><img class="logo" src="./brand-logo.svg" alt="Placeholder B logo"><span class="product">Home loans</span><span class="divider">/</span><span class="current">Commission quote</span></div></header>
+    <main class="system-page"><div><p class="system-code">404</p><h1 class="system-title">Page not found.</h1></div></main>
+    <footer class="footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+
+  <div class="state-label">Unexpected error</div>
+  <section class="artboard" aria-label="Unexpected error mockup">
+    <header class="header"><div class="header-inner"><img class="logo" src="./brand-logo.svg" alt="Placeholder B logo"><span class="product">Home loans</span><span class="divider">/</span><span class="current">Commission quote</span></div></header>
+    <main class="system-page"><div><h1 class="system-title">Something went wrong.</h1><p class="system-copy">Please contact your administrator.<span class="correlation">Correlation ID: 550e8400-e29b-41d4-a716-446655440000</span></p></div></main>
+    <footer class="footer">© 2026 B Mock. All rights reserved.</footer>
+  </section>
+</div>
