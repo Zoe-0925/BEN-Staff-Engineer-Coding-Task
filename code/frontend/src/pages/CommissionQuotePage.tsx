@@ -16,10 +16,10 @@ import {
   LoadingNote,
   LoadingPlaceholder,
   LoadingResult,
-  PageAlert,
   PageContainer,
   PageHeading,
   PageIntroduction,
+  PageLevelError,
 } from './CommissionQuotePage.styles';
 
 const FORM_CONTEXT = 'commissionQuote';
@@ -33,27 +33,8 @@ const EXPECTED_ERROR_CODES: Partial<Record<number, ErrorResponse['error']['code'
   503: 'SERVICE_UNAVAILABLE',
 };
 
-function isErrorResponse(response: unknown): response is ErrorResponse {
-  if (!response || typeof response !== 'object' || !('error' in response)) {
-    return false;
-  }
-
-  const responseError: unknown = response.error;
-
-  if (
-    !responseError ||
-    typeof responseError !== 'object' ||
-    !('code' in responseError) ||
-    !('message' in responseError)
-  ) {
-    return false;
-  }
-
-  return typeof responseError.code === 'string' && typeof responseError.message === 'string';
-}
-
 function mapRequestError(error: unknown, correlationId: string): RequestState {
-  if (!axios.isAxiosError<unknown>(error)) {
+  if (!axios.isAxiosError<ErrorResponse>(error)) {
     return { status: 'unknownError', correlationId };
   }
 
@@ -66,7 +47,7 @@ function mapRequestError(error: unknown, correlationId: string): RequestState {
   }
 
   const status = error.response?.status;
-  const response = error.response?.data;
+  const responseError = error.response?.data?.error;
 
   if (status === 500) {
     return { status: 'unknownError', correlationId };
@@ -74,8 +55,9 @@ function mapRequestError(error: unknown, correlationId: string): RequestState {
 
   if (
     status === undefined ||
-    !isErrorResponse(response) ||
-    response.error.code !== EXPECTED_ERROR_CODES[status]
+    !responseError ||
+    responseError.code !== EXPECTED_ERROR_CODES[status] ||
+    typeof responseError.message !== 'string'
   ) {
     return { status: 'unknownError', correlationId };
   }
@@ -85,8 +67,8 @@ function mapRequestError(error: unknown, correlationId: string): RequestState {
       return {
         status: 'serviceError',
         correlationId,
-        message: response.error.message,
-        fieldErrors: response.error.fieldErrors,
+        message: responseError.message,
+        fieldErrors: responseError.fieldErrors,
       };
     case 401:
     case 404:
@@ -94,7 +76,7 @@ function mapRequestError(error: unknown, correlationId: string): RequestState {
       return {
         status: 'serviceError',
         correlationId,
-        message: response.error.message,
+        message: responseError.message,
       };
     default:
       return { status: 'unknownError', correlationId };
@@ -183,7 +165,7 @@ export function CommissionQuotePage() {
     <PageContainer>
       <PageHeading>Commission quote</PageHeading>
       <PageIntroduction>Enter the loan details to generate a commission quote.</PageIntroduction>
-      {serviceError && <PageAlert role="alert">{serviceError.message}</PageAlert>}
+      {serviceError && <PageLevelError role="alert">{serviceError.message}</PageLevelError>}
       <CommissionQuoteForm
         fields={config.value}
         isLoading={isLoading}

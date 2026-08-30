@@ -26,7 +26,7 @@ export const PageIntroduction = styled.p`
   line-height: 1.5;
 `;
 
-export const PageAlert = styled.div`
+export const PageLevelError = styled.div`
   margin: -${({ theme }) => theme.spacing.medium} 0 ${({ theme }) => theme.spacing.section};
   padding: ${({ theme }) => theme.typography.fontSize.bodySmall}
     ${({ theme }) => theme.spacing.xxLarge};
