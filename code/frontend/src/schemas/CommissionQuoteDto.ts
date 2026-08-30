@@ -8,7 +8,7 @@ export type CommissionQuoteRequest = {
 
 export type CommissionQuoteResponse = {
   quoteId: string;
-  commissionRate: 0.001 | 0.002 | 0.003;
+  commissionRate: number;
   upfrontCommission: number;
   monthlyTrailCommission: number;
   totalCommission: number;

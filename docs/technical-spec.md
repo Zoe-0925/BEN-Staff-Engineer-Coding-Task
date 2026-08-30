@@ -212,7 +212,7 @@ export type CommissionQuoteRequest = {
 
 export type CommissionQuoteResponse = {
   quoteId: string;
-  commissionRate: 0.001 | 0.002 | 0.003;
+  commissionRate: number;
   upfrontCommission: number;
   monthlyTrailCommission: number;
   totalCommission: number;
@@ -899,6 +899,7 @@ Grid
   4. `monthlyTrailCommission` — label: **Monthly trail commission**
   5. `totalCommission` — label: **Total commission**
 - Display `commissionRate` as a percentage. Example: `0.001` becomes `0.1%`.
+- Treat `commissionRate` as an API-owned numeric response value. The UI must not duplicate or validate the backend's current rate set.
 - Display commission amounts as AUD currency with exactly two decimal places using `Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" })`.
 - Display `quoteId` unchanged.
 - Use only values returned by the API; do not recalculate commission in React.
