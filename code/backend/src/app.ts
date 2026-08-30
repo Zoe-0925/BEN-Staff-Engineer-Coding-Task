@@ -2,7 +2,9 @@ import cors from 'cors';
 import express from 'express';
 
 import { apiKeyAuth } from './middleware/apiKeyAuth';
+import { errorHandler } from './middleware/errorHandler';
 import { httpLogger } from './middleware/httpLogger';
+import { notFound } from './middleware/notFound';
 import { createCommissionQuoteRouter } from './routes/createCommissionQuoteRoute';
 
 export const app = express();
@@ -20,3 +22,5 @@ app.use(
 app.use(apiKeyAuth);
 app.use(express.json());
 app.use(createCommissionQuoteRouter);
+app.use(notFound);
+app.use(errorHandler);
