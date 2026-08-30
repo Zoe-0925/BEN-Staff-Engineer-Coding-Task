@@ -63,26 +63,24 @@ export async function createCommissionQuote(
 
     return response.data;
   } catch (error: unknown) {
-    if (!axios.isAxiosError(error)) {
-      throw error;
+    if (axios.isAxiosError(error)) {
+      const responseCorrelationId = readCorrelationId(error.response?.headers, correlationId);
+      const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
+      const failureLog: LogEntry = isTimeout
+        ? {
+            level: 'error',
+            event: 'QUOTE_REQUEST_TIMEOUT',
+            message: 'Commission quote request timed out.',
+            correlationId: responseCorrelationId,
+          }
+        : {
+            level: 'error',
+            event: 'QUOTE_REQUEST_FAILED',
+            message: 'Commission quote request failed.',
+            correlationId: responseCorrelationId,
+          };
+      log.error(failureLog);
     }
-
-    const responseCorrelationId = readCorrelationId(error.response?.headers, correlationId);
-    const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
-    const failureLog: LogEntry = isTimeout
-      ? {
-          level: 'error',
-          event: 'QUOTE_REQUEST_TIMEOUT',
-          message: 'Commission quote request timed out.',
-          correlationId: responseCorrelationId,
-        }
-      : {
-          level: 'error',
-          event: 'QUOTE_REQUEST_FAILED',
-          message: 'Commission quote request failed.',
-          correlationId: responseCorrelationId,
-        };
-    log.error(failureLog);
 
     throw error;
   }

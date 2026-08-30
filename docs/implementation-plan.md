@@ -211,7 +211,7 @@ Read all four sources before editing. Do not implement CQ-005 from Functional Sp
 - Give every field its own Grid item and apply config width.
 - Store one `{ name, value }` entry per config field in the form reducer.
 - Validate a field first on blur, then on change after it has been touched and invalid.
-- On submit, validate all fields before mapping the request.
+- On submit, validate all fields and pass the validated metadata list to the Page; do not map or classify errors in the Form.
 - Keep the untouched form button enabled; disable it when known errors exist or the request is loading.
 - Do not call the API from a field or from `CommissionQuoteForm`.
 
@@ -220,7 +220,7 @@ Read all four sources before editing. Do not implement CQ-005 from Functional Sp
 - One Input implementation renders both numeric input fields.
 - Required and invalid messages appear at the approved field location.
 - Correcting all known errors re-enables submission.
-- Form submission emits only a valid `CommissionQuoteRequest`.
+- Form submission emits only a metadata list that passed client validation.
 - Frontend type check, lint, and format check pass.
 
 **Stop for review:** reusable component APIs, config-driven rendering, reducer behaviour, blur/change validation, and submit boundary.
@@ -242,6 +242,7 @@ Read all four sources before editing. Do not implement CQ-005 from Functional Sp
 **Implementation:**
 
 - Own API submission and `RequestState` in `CommissionQuotePage`.
+- Map validated form metadata in the Page. Treat an `undefined` mapping result as `unknownError` without throwing or calling the API.
 - Generate one UUID per request and preserve it through request, logs, response, and displayed system errors.
 - Render success values only from the response; never recalculate them in the UI.
 - Map `400`, `401`, API `404`, `503`, timeout, `500`, and unknown failures exactly as Technical Spec states.

@@ -467,7 +467,7 @@ type CommissionQuoteFormProps = {
   fields: Field[];
   isLoading: boolean;
   apiFieldErrors?: ErrorResponse["error"]["fieldErrors"];
-  onSubmit: (request: CommissionQuoteRequest) => Promise<void>;
+  onSubmit: (values: FieldMetadata[]) => Promise<void>;
 };
 
 // CommissionQuoteResult.tsx
@@ -810,8 +810,9 @@ Every field change returns the same metadata shape:
 - Return `validation.errorMessage` for any non-required Input failure; otherwise return `undefined`.
 - Input and Select call `validateField()` for their client-side validation; `validateForm()` calls the same function for every configured field.
 - `validateField()` returns the configured error message or `undefined`; it does not update React state.
-- After successful validation, the Form passes the metadata list to `mapCommissionQuoteRequest()` from `commissionQuoteRequestMapper.ts`.
-- Its exact signature is `mapCommissionQuoteRequest(values: FieldMetadata[]): CommissionQuoteRequest`.
+- After successful validation, the Form passes the validated metadata list to `CommissionQuotePage` through `onSubmit(values)`.
+- `CommissionQuotePage` calls `mapCommissionQuoteRequest()` from `commissionQuoteRequestMapper.ts` before starting the API request.
+- Its exact signature is `mapCommissionQuoteRequest(values: FieldMetadata[]): CommissionQuoteRequest | undefined`.
 - The mapper converts the generic metadata list into `CommissionQuoteRequest`:
 
 ```text
@@ -822,10 +823,10 @@ Every field change returns the same metadata shape:
 }
 ```
 
-- The mapper does not repeat configured business validation or call the API.
-- As a typed mapping boundary, it must fail clearly if required metadata is missing, `null`, or has the wrong primitive type; it must not use a type assertion to return an incomplete DTO.
+- The mapper does not repeat configured business validation, call the API, or throw an error.
+- If required metadata is missing, `null`, or has the wrong primitive type, return `undefined`; do not return an incomplete DTO or use a type assertion.
 - The mapper finds values by metadata `name`, never by array position.
-- `CommissionQuoteForm` calls `onSubmit(requestDto)` only after validation and mapping succeed.
+- `CommissionQuotePage` treats an `undefined` mapping result as an unexpected frontend failure and enters `unknownError` without calling the API.
 - The Generate quote button is disabled when `hasErrors` is true or the Page reports loading.
 - An untouched empty form has no displayed errors, so its button is enabled; selecting **Generate quote** runs full-form validation, stores required errors, and disables the button.
 - Correcting every displayed error clears `hasErrors` and restores the button.
@@ -853,7 +854,7 @@ Generate quote / Future Next
 3. Each non-empty invalid Input receives its configured `validation.errorMessage`.
 4. Each reusable field displays the error associated with its own `name`.
 5. If any field is invalid, do not call `onSubmit` and do not navigate.
-6. If every field is valid, create `CommissionQuoteRequest` and continue with Generate quote or a future Next action.
+6. If every field is valid, pass the validated metadata list to the Page; the Page maps it before Generate quote or a future Next action.
 
 ## 7. Page layout
 
@@ -909,10 +910,12 @@ Grid
 3. User selects **Generate quote**.
 4. The Form runs `validateForm()` across every configured field.
 5. If any field is invalid, each affected field displays its own error and submission stops.
-6. If all fields are valid, the Form creates `CommissionQuoteRequest` and calls `onSubmit(requestDto)`.
-7. `CommissionQuotePage` enters loading state and calls the API.
-8. The Page renders either the quote response or a page-level error.
-9. If the frontend catches an error that has no confirmed status mapping, it renders `UnknownError`.
+6. If all fields are valid, the Form calls `onSubmit(values)` with the validated metadata list.
+7. `CommissionQuotePage` maps the metadata to `CommissionQuoteRequest`.
+8. If mapping returns `undefined`, the Page records `UNEXPECTED_FRONTEND_ERROR`, enters `unknownError`, and does not call the API.
+9. If mapping succeeds, `CommissionQuotePage` enters loading state and calls the API.
+10. The Page renders either the quote response or a page-level error.
+11. If the Page catches an error that has no confirmed status mapping, it renders `UnknownError`.
 
 ## 9. Frontend request states
 
@@ -928,7 +931,8 @@ Grid
 ### Mockup-to-state data flow
 
 - `CommissionQuotePage` is the single owner of the current request state, API response, page-level error, and whether `UnknownError` replaces the form content.
-- `CommissionQuoteForm` owns field values and field errors. It receives `isLoading` and optional API `fieldErrors` from the Page.
+- `CommissionQuoteForm` owns field values, field errors, and client validation. It passes validated metadata to the Page and does not map request DTOs or classify errors.
+- `CommissionQuotePage` owns DTO mapping, API submission, error classification, correlation IDs, and every page-level error transition.
 - When API `fieldErrors` change, the Form copies them into its local reducer by field `name`. Editing a field clears that field's API error and resumes the normal client-validation flow.
 - Page-level alerts are rendered directly by `CommissionQuotePage` and styled in `CommissionQuotePage.styles.ts`; do not add another alert component or file.
 - The loading result placeholder is rendered by the Page; do not pass incomplete data to `CommissionQuoteResult`.
@@ -937,19 +941,32 @@ State transitions:
 
 1. **Idle:** render the configured form with no result or page-level error.
 2. **Client validation error:** `validateForm()` stores required or validation messages in the Form reducer; render them below their matching controls and do not call the API.
-3. **Loading:** create the correlation ID, clear the previous result and page-level error, preserve field values, disable all controls, call `commissionQuoteApi`, and render the approved loading button, note, and result placeholder.
-4. **200 success:** store the returned `CommissionQuoteResponse`, clear errors, restore the controls, and render `CommissionQuoteResult` using only the response data.
-5. **400:** preserve values, pass returned `fieldErrors` to the Form, and display the returned `error.message` in the page-level alert.
-6. **401:** preserve values, restore the controls, and display the returned API-key `error.message` in the page-level alert.
-7. **503:** preserve values, restore the controls, and display the service-unavailable message in the page-level alert.
-8. **Request timeout:** abort the request, preserve values, restore the controls, and display the timeout message in the page-level alert.
-9. **500 or unrecognised caught error:** log with the correlation ID and replace the form content with `UnknownError`.
-10. **Frontend route `*`:** React Router renders `NotFound`; this is separate from an API `404` response.
-11. **API 404:** preserve the form and display the returned `error.message` in the page-level alert; do not navigate to `NotFound`.
+3. **Mapping failure:** create a correlation ID, record `UNEXPECTED_FRONTEND_ERROR`, enter `unknownError`, and do not call the API.
+4. **Loading:** after mapping succeeds, create the request correlation ID, clear the previous result and page-level error, preserve field values, disable all controls, call `commissionQuoteApi`, and render the approved loading button, note, and result placeholder.
+5. **200 success:** store the returned `CommissionQuoteResponse`, clear errors, restore the controls, and render `CommissionQuoteResult` using only the response data.
+6. **400:** preserve values, pass returned `fieldErrors` to the Form, and display the returned `error.message` in the page-level alert.
+7. **401:** preserve values, restore the controls, and display the returned API-key `error.message` in the page-level alert.
+8. **503:** preserve values, restore the controls, and display the service-unavailable message in the page-level alert.
+9. **Request timeout:** abort the request, preserve values, restore the controls, and display the timeout message in the page-level alert.
+10. **500 or unrecognised caught error:** log with the correlation ID and replace the form content with `UnknownError`.
+11. **Frontend route `*`:** React Router renders `NotFound`; this is separate from an API `404` response.
+12. **API 404:** preserve the form and display the returned `error.message` in the page-level alert; do not navigate to `NotFound`.
 
 - `AppHeader` and `AppFooter` remain visible for every state because they are outside the route switch.
 - A new submission clears the previous result and page-level alert before entering loading.
 - Do not render stale quote values after a new submission, API error, timeout, or unknown error.
+
+### Centralised frontend error handling
+
+- `CommissionQuotePage` is the single coordinator for every page-level error and `RequestState` transition.
+- `CommissionQuoteForm` owns only expected client field errors. It does not throw, map DTOs, log errors, classify errors, or select an error page.
+- `useConfig` returns `undefined` for unavailable or missing config. It does not throw or select an error page.
+- `mapCommissionQuoteRequest` returns `undefined` for an incomplete structural mapping. It does not throw, log, or select an error page.
+- `commissionQuoteApi.ts` is the transport boundary: Axios may reject, the service logs the transport outcome and rethrows the original narrowed Axios error.
+- One Page submission handler maps metadata, calls the API, catches the Axios rejection, and converts every outcome into `RequestState`.
+- Keep status/code classification out of render branches and child components. Use one Page-local request-error mapping function for timeout, `400`, `401`, API `404`, `500`, `503`, network failures, malformed error responses, and unrecognised errors.
+- Expected recoverable failures become `serviceError`; mapping failures, `500`, malformed responses, network failures, and unrecognised errors become `unknownError`.
+- Missing config is handled by the Page before rendering the Form. It records `CONFIG_NOT_FOUND` and renders the approved `UnknownError` component without entering request state because no submission occurred.
 
 ## 10. API error and timeout handling
 
@@ -986,7 +1003,9 @@ State transitions:
 
 ### Unexpected frontend error
 
-- `CommissionQuotePage` must catch errors from the API submission flow.
+- `CommissionQuotePage` is the single error coordinator for mapping and API submission.
+- A mapping result of `undefined` enters `unknownError` without throwing.
+- `CommissionQuotePage` must catch errors from the API submission flow in one request boundary.
 - Any caught error without a confirmed `400`, `401`, `500`, `503`, or timeout mapping must render `UnknownError`.
 - `UnknownError` displays **Something went wrong.**, then **Please contact your administrator.**, then the smaller **Correlation ID: {correlationId}** text.
 - Use the current request correlation ID; if none exists, generate one with `crypto.randomUUID()`.
