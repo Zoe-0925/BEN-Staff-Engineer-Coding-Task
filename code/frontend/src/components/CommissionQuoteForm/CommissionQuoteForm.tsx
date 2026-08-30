@@ -84,7 +84,7 @@ export function CommissionQuoteForm({
   const hasErrors = Object.values(state.errors).some(Boolean);
 
   useEffect(() => {
-    if (apiFieldErrors !== undefined) {
+    if (apiFieldErrors) {
       const fieldErrors: Record<string, string | undefined> = { ...apiFieldErrors };
       dispatch({ type: 'SET_FIELD_ERRORS', payload: fieldErrors });
     }
