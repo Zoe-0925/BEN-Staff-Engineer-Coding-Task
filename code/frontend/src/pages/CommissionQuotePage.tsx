@@ -1,4 +1,3 @@
-import axios from 'axios';
 import log from 'loglevel';
 import { useEffect, useRef, useState } from 'react';
 
@@ -7,11 +6,11 @@ import { CommissionQuoteResult } from '../components/CommissionQuoteResult/Commi
 import { UnknownError } from '../components/UnknownError/UnknownError';
 import { useConfig } from '../hooks/useConfig';
 import { mapCommissionQuoteRequest } from '../mappers/commissionQuoteRequestMapper';
-import type { ErrorResponse } from '../schemas/CommissionQuoteDto';
 import type { FieldMetadata } from '../schemas/FieldMetadata';
 import type { LogEntry } from '../schemas/LogEntry';
 import type { RequestState } from '../schemas/RequestState';
 import { createCommissionQuote } from '../services/commissionQuoteApi';
+import { mapRequestError } from '../utils/mapRequestError';
 import {
   LoadingNote,
   LoadingPlaceholder,
@@ -23,65 +22,6 @@ import {
 } from './CommissionQuotePage.styles';
 
 const FORM_CONTEXT = 'commissionQuote';
-const TIMEOUT_MESSAGE = "We couldn't generate the quote. Please try again later.";
-
-const EXPECTED_ERROR_CODES: Partial<Record<number, ErrorResponse['error']['code']>> = {
-  400: 'VALIDATION_ERROR',
-  401: 'UNAUTHORIZED',
-  404: 'NOT_FOUND',
-  500: 'INTERNAL_ERROR',
-  503: 'SERVICE_UNAVAILABLE',
-};
-
-function mapRequestError(error: unknown, correlationId: string): RequestState {
-  if (!axios.isAxiosError<ErrorResponse>(error)) {
-    return { status: 'unknownError', correlationId };
-  }
-
-  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-    return {
-      status: 'serviceError',
-      correlationId,
-      message: TIMEOUT_MESSAGE,
-    };
-  }
-
-  const status = error.response?.status;
-  const responseError = error.response?.data?.error;
-
-  if (status === 500) {
-    return { status: 'unknownError', correlationId };
-  }
-
-  if (
-    !status ||
-    !responseError ||
-    responseError.code !== EXPECTED_ERROR_CODES[status] ||
-    typeof responseError.message !== 'string'
-  ) {
-    return { status: 'unknownError', correlationId };
-  }
-
-  switch (status) {
-    case 400:
-      return {
-        status: 'serviceError',
-        correlationId,
-        message: responseError.message,
-        fieldErrors: responseError.fieldErrors,
-      };
-    case 401:
-    case 404:
-    case 503:
-      return {
-        status: 'serviceError',
-        correlationId,
-        message: responseError.message,
-      };
-    default:
-      return { status: 'unknownError', correlationId };
-  }
-}
 
 export function CommissionQuotePage() {
   const config = useConfig(FORM_CONTEXT);
