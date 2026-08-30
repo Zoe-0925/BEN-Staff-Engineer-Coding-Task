@@ -150,6 +150,15 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Goal:** Implement the typed, config-driven frontend data layer without rendering the business page.
 
+**Required sources for this ticket:**
+
+- Technical Spec is the implementation authority for the exact schema contracts, file structure, config and Context flow, `useConfig` behaviour, validator signature, mapper signature, Axios service, correlation, and logging.
+- Functional Spec supplies the approved field values, labels, options, validation rules, and user-facing messages. It does not define the frontend architecture.
+- OpenAPI supplies the authoritative request, response, error DTO, header, and endpoint contract.
+- Code Quality Instructions apply to every generated TypeScript file.
+
+Read all four sources before editing. Do not implement CQ-005 from Functional Spec alone.
+
 **Create or modify:**
 
 - Every approved file under `code/frontend/src/schemas/`.

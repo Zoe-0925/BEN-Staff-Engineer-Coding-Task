@@ -1,0 +1,54 @@
+[
+  {
+    "formContext": "commissionQuote",
+    "value": [
+      {
+        "type": "Input",
+        "name": "loanAmount",
+        "label": "Loan amount",
+        "width": { "xs": 12, "md": 12 },
+        "isRequired": true,
+        "requiredErrorMessage": "Please enter the loan amount.",
+        "validation": {
+          "min": 0.01,
+          "max": 10000000,
+          "maxDecimalPlaces": 2,
+          "errorMessage": "Please enter a valid loan amount."
+        },
+        "prefix": "$"
+      },
+      {
+        "type": "Input",
+        "name": "loanTermInMonths",
+        "label": "Loan term",
+        "width": { "xs": 12, "md": 12 },
+        "isRequired": true,
+        "requiredErrorMessage": "Please enter the loan term in months.",
+        "validation": {
+          "min": 1,
+          "max": 360,
+          "integer": true,
+          "errorMessage": "The loan term must be between 1 and 360 months."
+        },
+        "suffix": "months"
+      },
+      {
+        "type": "Select",
+        "name": "riskBand",
+        "label": "Risk band",
+        "width": { "xs": 12, "md": 12 },
+        "isRequired": true,
+        "requiredErrorMessage": "Please select a risk band.",
+        "placeholder": "Select a risk band",
+        "validation": {
+          "errorMessage": "Please select a valid risk band."
+        },
+        "options": [
+          { "label": "Low", "value": "LOW" },
+          { "label": "Medium", "value": "MEDIUM" },
+          { "label": "High", "value": "HIGH" }
+        ]
+      }
+    ]
+  }
+]
