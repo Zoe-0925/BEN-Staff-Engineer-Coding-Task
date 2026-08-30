@@ -157,7 +157,6 @@ export function CommissionQuoteForm({
         })}
         <GridItem $width={FULL_WIDTH}>
           <Button
-            type="submit"
             label="Generate quote"
             loadingLabel="Generating quote..."
             isLoading={isLoading}

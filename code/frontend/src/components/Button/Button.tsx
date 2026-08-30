@@ -2,7 +2,6 @@ import { keyframes } from 'styled-components';
 import styled from 'styled-components';
 
 type ButtonProps = {
-  type: 'button' | 'submit';
   label: string;
   loadingLabel: string;
   isLoading: boolean;
@@ -51,9 +50,9 @@ const Spinner = styled.span`
   animation: ${rotate} 0.8s linear infinite;
 `;
 
-export function Button({ type, label, loadingLabel, isLoading, disabled }: ButtonProps) {
+export function Button({ label, loadingLabel, isLoading, disabled }: ButtonProps) {
   return (
-    <StyledButton type={type} disabled={disabled || isLoading} aria-busy={isLoading}>
+    <StyledButton type="submit" disabled={disabled || isLoading} aria-busy={isLoading}>
       {isLoading && <Spinner aria-hidden="true" />}
       {isLoading ? loadingLabel : label}
     </StyledButton>
