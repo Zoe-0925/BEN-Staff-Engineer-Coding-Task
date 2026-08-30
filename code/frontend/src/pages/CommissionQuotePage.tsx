@@ -130,11 +130,13 @@ export function CommissionQuotePage() {
     const correlationId = crypto.randomUUID();
     const request = mapCommissionQuoteRequest(values);
 
+    // A validated form reaches this branch only when its metadata no longer matches the DTO contract.
     if (!request) {
       const mappingErrorLog: LogEntry = {
         level: 'error',
         event: 'UNEXPECTED_FRONTEND_ERROR',
-        message: 'Unable to map commission quote request.',
+        message:
+          'Commission quote request mapping failed: required metadata is missing or has an unexpected type.',
         correlationId,
       };
       log.error(mappingErrorLog);
@@ -154,7 +156,8 @@ export function CommissionQuotePage() {
         const unexpectedErrorLog: LogEntry = {
           level: 'error',
           event: 'UNEXPECTED_FRONTEND_ERROR',
-          message: 'Unexpected commission quote request error.',
+          message:
+            'Commission quote request failed: unrecognized error, network failure, or malformed API response.',
           correlationId,
         };
         log.error(unexpectedErrorLog);
