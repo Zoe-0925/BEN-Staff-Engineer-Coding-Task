@@ -1,4 +1,3 @@
-import { keyframes } from 'styled-components';
 import styled from 'styled-components';
 
 type ButtonProps = {
@@ -7,12 +6,6 @@ type ButtonProps = {
   isLoading: boolean;
   disabled: boolean;
 };
-
-const rotate = keyframes`
-  to {
-    transform: rotate(360deg);
-  }
-`;
 
 const StyledButton = styled.button`
   display: flex;
@@ -47,7 +40,6 @@ const Spinner = styled.span`
   border: 2px solid ${({ theme }) => theme.colors.spinnerTrack};
   border-top-color: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.radii.round};
-  animation: ${rotate} 0.8s linear infinite;
 `;
 
 export function Button({ label, loadingLabel, isLoading, disabled }: ButtonProps) {

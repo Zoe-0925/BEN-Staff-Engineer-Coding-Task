@@ -21,7 +21,7 @@ import {
   PageLevelError,
 } from './CommissionQuotePage.styles';
 
-const FORM_CONTEXT = 'commissionQuote';
+const FORM_CONTEXT = import.meta.env.VITE_COMMISSION_QUOTE_FORM_CONTEXT || 'commissionQuote';
 
 export function CommissionQuotePage() {
   const config = useConfig(FORM_CONTEXT);

@@ -67,7 +67,7 @@ const SelectElement = styled.select`
 
 const Chevron = styled.span`
   position: absolute;
-  right: ${({ theme }) => theme.spacing.xxLarge};
+  right: ${({ theme }) => theme.sizes.chevronInset};
   color: ${({ theme }) => theme.colors.primary};
   font-size: ${({ theme }) => theme.typography.fontSize.small};
   pointer-events: none;

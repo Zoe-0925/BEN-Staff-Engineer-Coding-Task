@@ -4,16 +4,17 @@ type UnknownErrorProps = {
   correlationId: string;
 };
 
-const SystemPage = styled.main`
+const SystemPage = styled.div`
   display: grid;
   flex: 1;
-  width: min(520px, calc(100% - 64px));
+  width: ${({ theme }) =>
+    `min(${theme.sizes.pageMaxWidth}, calc(100% - ${theme.spacing.pageHorizontal}))`};
   margin: 0 auto;
   place-content: center;
   text-align: center;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.medium}) {
-    width: calc(100% - ${({ theme }) => theme.spacing.result});
+    width: calc(100% - ${({ theme }) => theme.spacing.pageHorizontalMobile});
   }
 `;
 
