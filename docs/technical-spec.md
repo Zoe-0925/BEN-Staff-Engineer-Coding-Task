@@ -212,7 +212,7 @@ export type CommissionQuoteRequest = {
 
 export type CommissionQuoteResponse = {
   quoteId: string;
-  commissionRate: 0.001 | 0.002 | 0.003;
+  commissionRate: number;
   upfrontCommission: number;
   monthlyTrailCommission: number;
   totalCommission: number;
@@ -243,13 +243,13 @@ export type RiskBand = "LOW" | "MEDIUM" | "HIGH";
 #### `FieldValue.ts`
 
 ```ts
-import type { RiskBand } from "./RiskBand";
-
-export type FieldValue = number | RiskBand | null;
+export type FieldValue = number | string;
 ```
 
-- Empty Input and Select values are `null`; they are never stored as empty strings.
+- `FieldValue` represents a value that exists; it never includes `null`, `undefined`, or an empty string.
+- Empty Input and Select state is represented by the required `FieldMetadata.value` property containing `undefined`.
 - `loanAmount` and `loanTermInMonths` are numbers in form state and in the request DTO.
+- Select option values are strings in generic form state. Domain narrowing occurs only at the DTO mapper boundary.
 
 #### `FieldMetadata.ts`
 
@@ -258,7 +258,7 @@ import type { FieldValue } from "./FieldValue";
 
 export type FieldMetadata = {
   name: string;
-  value: FieldValue;
+  value: FieldValue | undefined;
 };
 ```
 
@@ -292,7 +292,6 @@ import type { SelectOption } from "./SelectOption";
 import type { Validation } from "./Validation";
 
 export type Field = {
-  type: "Input" | "Select";
   name: string;
   label: string;
   width: {
@@ -301,16 +300,23 @@ export type Field = {
   };
   isRequired: boolean;
   requiredErrorMessage: string;
-  validation: Validation;
-  prefix?: string;
-  suffix?: string;
-  placeholder?: string;
-  options?: SelectOption[];
-};
+} & (
+  | {
+      type: "Input";
+      validation: Validation;
+      prefix?: string;
+      suffix?: string;
+    }
+  | {
+      type: "Select";
+      placeholder?: string;
+      options: SelectOption[];
+    }
+);
 ```
 
-- Input uses optional `prefix` and `suffix` presentation metadata.
-- Select uses `placeholder` and `options`.
+- Input requires validation metadata and uses optional `prefix` and `suffix` presentation metadata.
+- Select uses `placeholder` and required `options`; it performs required validation only.
 - `type` is the discriminant used by the Page switch statement; do not create `FieldType.ts`.
 - `name` remains a string; do not create `FieldName.ts`.
 
@@ -372,7 +378,8 @@ import type { FormConfig } from "./FormConfig";
 export type ConfigContextValue = FormConfig[] | undefined;
 ```
 
-- `undefined` means the hook is outside `ConfigProvider`; an empty array is a valid provider value with no matching config.
+- `undefined` means config is unavailable, including use outside `ConfigProvider`.
+- An empty array is a valid provider value with no matching config.
 
 #### `LogEntry.ts`
 
@@ -429,7 +436,7 @@ Required component prop contracts:
 // Input.tsx
 type InputProps = {
   field: Field;
-  value: number | null;
+  value: number | undefined;
   error?: string;
   disabled: boolean;
   onChange: (field: FieldMetadata, error?: string) => void;
@@ -439,7 +446,7 @@ type InputProps = {
 // Select.tsx
 type SelectProps = {
   field: Field;
-  value: RiskBand | null;
+  value: string | undefined;
   error?: string;
   disabled: boolean;
   onChange: (field: FieldMetadata, error?: string) => void;
@@ -460,7 +467,7 @@ type CommissionQuoteFormProps = {
   fields: Field[];
   isLoading: boolean;
   apiFieldErrors?: ErrorResponse["error"]["fieldErrors"];
-  onSubmit: (request: CommissionQuoteRequest) => Promise<void>;
+  onSubmit: (values: FieldMetadata[]) => Promise<void>;
 };
 
 // CommissionQuoteResult.tsx
@@ -607,7 +614,8 @@ useConfig("commissionQuote") → FormConfig | undefined
 
 ### Context error handling
 
-- If `useConfig` is called outside `ConfigProvider`, throw `useConfig must be used within ConfigProvider`.
+- If the Context value is `undefined`, return `undefined` so the Page handles the same missing-config path.
+- Use an explicit falsy guard for the unavailable Context value; an empty array remains valid because arrays are truthy.
 - If no item matches `formContext`, return `undefined`.
 - This includes an empty config array or deletion of the `"commissionQuote"` config object from the array.
 - If `CommissionQuotePage` receives `undefined`, do not render the form.
@@ -677,9 +685,6 @@ The JSON root is an array. This MVP contains one config object:
         "isRequired": true,
         "requiredErrorMessage": "Please select a risk band.",
         "placeholder": "Select a risk band",
-        "validation": {
-          "errorMessage": "Please select a valid risk band."
-        },
         "options": [
           { "label": "Low", "value": "LOW" },
           { "label": "Medium", "value": "MEDIUM" },
@@ -695,7 +700,7 @@ The JSON root is an array. This MVP contains one config object:
 - `formContext` uniquely identifies one form configuration.
 - `FormConfig.value` is an ordered `Field[]`.
 - The commission quote config contains two input items and one select item.
-- Config can change existing field labels, order, widths, validation limits/messages, and select options without changing component code.
+- Config can change existing field labels, order, widths, Input validation limits/messages, and Select options without changing component code.
 - Adding a new DTO field or a new `Field.type` requires corresponding schema, mapper, and switch changes; config is not claimed to make API-contract changes code-free.
 
 Each item in `FormConfig.value` is a `Field` object containing:
@@ -706,7 +711,8 @@ Each item in `FormConfig.value` is a `Field` object containing:
 - `width`: responsive 12-column grid width with inline shape `{ xs: number; md: number }`.
 - `isRequired`: whether an empty value is invalid.
 - `requiredErrorMessage`: message shown when a required field is empty.
-- `validation`: field validation rules and the single message used for any non-required validation failure.
+- Input fields contain `validation`: field validation rules and the single message used for any non-required Input validation failure.
+- Select fields omit `validation`; after the required check, their controlled value comes from the configured options.
 
 `Validation.ts` exports:
 
@@ -719,8 +725,8 @@ Validation
 - errorMessage: string
 ```
 
-- Every rule is config-driven; generic validation must not branch on a field name.
-- A field has only two client-side error outcomes: its configured required error or its configured validation error.
+- Every Input rule is config-driven; generic validation must not branch on a field name.
+- An Input has its configured required or validation error. A Select has only its configured required error.
 
 - `width.xs` and `width.md` must each be an integer from 1 to 12.
 - Do not create a separate `FieldWidth` schema; width is part of the `Field` config schema.
@@ -789,7 +795,7 @@ Every field change returns the same metadata shape:
 ]
 ```
 
-- Initialise the list from `config.value` in the same order with one `{ name: field.name, value: null }` item per field.
+- Initialise the list from `config.value` in the same order with one `{ name: field.name, value: undefined }` item per field.
 - Local `useReducer` owns the metadata list and field errors.
 - One generic change handler dispatches an update by `name`.
 - The handler always dispatches `UPDATE_FIELD`. If that field already has an error, it also dispatches `SET_FIELD_ERROR` with the revalidated error or `undefined` supplied by the component.
@@ -797,15 +803,16 @@ Every field change returns the same metadata shape:
 - No field-specific change handlers are required.
 - `hasErrors` is derived with `Object.values(errors).some(Boolean)`; it is not stored separately.
 - `validateField.ts` contains the single shared field-validation function.
-- Its exact signature is `validateField(field: Field, value: FieldValue): string | undefined`.
-- If `value` is `null`, return `requiredErrorMessage` only when `isRequired` is true.
+- Its exact signature is `validateField(field: Field, value: FieldValue | undefined): string | undefined`.
+- If `value` is `undefined`, return `requiredErrorMessage` only when `isRequired` is true.
 - For `Input`, enforce the configured `min`, `max`, `integer`, and `maxDecimalPlaces` rules when present.
-- For `Select`, require the value to match one of `field.options[].value`.
-- Return `validation.errorMessage` for any non-required failure; otherwise return `undefined`.
+- For `Select`, return `undefined` after the required check; the controlled component exposes only configured options.
+- Return `validation.errorMessage` for any non-required Input failure; otherwise return `undefined`.
 - Input and Select call `validateField()` for their client-side validation; `validateForm()` calls the same function for every configured field.
 - `validateField()` returns the configured error message or `undefined`; it does not update React state.
-- After successful validation, the Form passes the metadata list to `mapCommissionQuoteRequest()` from `commissionQuoteRequestMapper.ts`.
-- Its exact signature is `mapCommissionQuoteRequest(values: FieldMetadata[]): CommissionQuoteRequest`.
+- After successful validation, the Form passes the validated metadata list to `CommissionQuotePage` through `onSubmit(values)`.
+- `CommissionQuotePage` calls `mapCommissionQuoteRequest()` from `commissionQuoteRequestMapper.ts` before starting the API request.
+- Its exact signature is `mapCommissionQuoteRequest(values: FieldMetadata[]): CommissionQuoteRequest | undefined`.
 - The mapper converts the generic metadata list into `CommissionQuoteRequest`:
 
 ```text
@@ -816,9 +823,12 @@ Every field change returns the same metadata shape:
 }
 ```
 
-- The mapper performs mapping only; it does not validate fields or call the API.
+- The mapper does not repeat configured business validation, call the API, or throw an error.
+- If required metadata is missing, `undefined`, or has the wrong primitive type, return `undefined`; do not return an incomplete DTO or use a broad object assertion.
 - The mapper finds values by metadata `name`, never by array position.
-- `CommissionQuoteForm` calls `onSubmit(requestDto)` only after validation and mapping succeed.
+- The controlled Select stores only values from `field.options`. After confirming the mapped risk-band value is a string, the mapper performs the single approved `RiskBand` type assertion at the DTO boundary; it must not duplicate configured options in a hard-coded guard.
+- Changing labels, order, or options within the approved API contract does not require mapper changes. A change to the API risk-band enum remains a contract change and requires OpenAPI and DTO review.
+- `CommissionQuotePage` treats an `undefined` mapping result as an unexpected frontend failure and enters `unknownError` without calling the API.
 - The Generate quote button is disabled when `hasErrors` is true or the Page reports loading.
 - An untouched empty form has no displayed errors, so its button is enabled; selecting **Generate quote** runs full-form validation, stores required errors, and disables the button.
 - Correcting every displayed error clears `hasErrors` and restores the button.
@@ -830,7 +840,7 @@ Every field change returns the same metadata shape:
 - Once a field has an error, revalidate it on every change and clear the error immediately when the value becomes valid.
 - A field displays only its own error.
 - An empty required field uses `requiredErrorMessage`.
-- Any other invalid value uses `validation.errorMessage`.
+- Any non-empty invalid Input value uses `validation.errorMessage`.
 - No debounce timer is required; blur defines when the user has finished the first editing attempt.
 
 ### Full-form validation
@@ -843,10 +853,10 @@ Generate quote / Future Next
 
 1. `validateForm()` checks every field in `config.value`, including untouched fields.
 2. Each empty required field receives its configured `requiredErrorMessage`.
-3. Each non-empty invalid field receives its configured `validation.errorMessage`.
+3. Each non-empty invalid Input receives its configured `validation.errorMessage`.
 4. Each reusable field displays the error associated with its own `name`.
 5. If any field is invalid, do not call `onSubmit` and do not navigate.
-6. If every field is valid, create `CommissionQuoteRequest` and continue with Generate quote or a future Next action.
+6. If every field is valid, pass the validated metadata list to the Page; the Page maps it before Generate quote or a future Next action.
 
 ## 7. Page layout
 
@@ -890,6 +900,7 @@ Grid
   4. `monthlyTrailCommission` — label: **Monthly trail commission**
   5. `totalCommission` — label: **Total commission**
 - Display `commissionRate` as a percentage. Example: `0.001` becomes `0.1%`.
+- Treat `commissionRate` as an API-owned numeric response value. The UI must not duplicate or validate the backend's current rate set.
 - Display commission amounts as AUD currency with exactly two decimal places using `Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" })`.
 - Display `quoteId` unchanged.
 - Use only values returned by the API; do not recalculate commission in React.
@@ -902,10 +913,12 @@ Grid
 3. User selects **Generate quote**.
 4. The Form runs `validateForm()` across every configured field.
 5. If any field is invalid, each affected field displays its own error and submission stops.
-6. If all fields are valid, the Form creates `CommissionQuoteRequest` and calls `onSubmit(requestDto)`.
-7. `CommissionQuotePage` enters loading state and calls the API.
-8. The Page renders either the quote response or a page-level error.
-9. If the frontend catches an error that has no confirmed status mapping, it renders `UnknownError`.
+6. If all fields are valid, the Form calls `onSubmit(values)` with the validated metadata list.
+7. `CommissionQuotePage` maps the metadata to `CommissionQuoteRequest`.
+8. If mapping returns `undefined`, the Page records `UNEXPECTED_FRONTEND_ERROR`, enters `unknownError`, and does not call the API.
+9. If mapping succeeds, `CommissionQuotePage` enters loading state and calls the API.
+10. The Page renders either the quote response or a page-level error.
+11. If the Page catches an error that has no confirmed status mapping, it renders `UnknownError`.
 
 ## 9. Frontend request states
 
@@ -921,7 +934,8 @@ Grid
 ### Mockup-to-state data flow
 
 - `CommissionQuotePage` is the single owner of the current request state, API response, page-level error, and whether `UnknownError` replaces the form content.
-- `CommissionQuoteForm` owns field values and field errors. It receives `isLoading` and optional API `fieldErrors` from the Page.
+- `CommissionQuoteForm` owns field values, field errors, and client validation. It passes validated metadata to the Page and does not map request DTOs or classify errors.
+- `CommissionQuotePage` owns DTO mapping, API submission, error classification, correlation IDs, and every page-level error transition.
 - When API `fieldErrors` change, the Form copies them into its local reducer by field `name`. Editing a field clears that field's API error and resumes the normal client-validation flow.
 - Page-level alerts are rendered directly by `CommissionQuotePage` and styled in `CommissionQuotePage.styles.ts`; do not add another alert component or file.
 - The loading result placeholder is rendered by the Page; do not pass incomplete data to `CommissionQuoteResult`.
@@ -930,19 +944,32 @@ State transitions:
 
 1. **Idle:** render the configured form with no result or page-level error.
 2. **Client validation error:** `validateForm()` stores required or validation messages in the Form reducer; render them below their matching controls and do not call the API.
-3. **Loading:** create the correlation ID, clear the previous result and page-level error, preserve field values, disable all controls, call `commissionQuoteApi`, and render the approved loading button, note, and result placeholder.
-4. **200 success:** store the returned `CommissionQuoteResponse`, clear errors, restore the controls, and render `CommissionQuoteResult` using only the response data.
-5. **400:** preserve values, pass returned `fieldErrors` to the Form, and display the returned `error.message` in the page-level alert.
-6. **401:** preserve values, restore the controls, and display the returned API-key `error.message` in the page-level alert.
-7. **503:** preserve values, restore the controls, and display the service-unavailable message in the page-level alert.
-8. **Request timeout:** abort the request, preserve values, restore the controls, and display the timeout message in the page-level alert.
-9. **500 or unrecognised caught error:** log with the correlation ID and replace the form content with `UnknownError`.
-10. **Frontend route `*`:** React Router renders `NotFound`; this is separate from an API `404` response.
-11. **API 404:** preserve the form and display the returned `error.message` in the page-level alert; do not navigate to `NotFound`.
+3. **Mapping failure:** create a correlation ID, record `UNEXPECTED_FRONTEND_ERROR`, enter `unknownError`, and do not call the API.
+4. **Loading:** after mapping succeeds, create the request correlation ID, clear the previous result and page-level error, preserve field values, disable all controls, call `commissionQuoteApi`, and render the approved loading button, note, and result placeholder.
+5. **200 success:** store the returned `CommissionQuoteResponse`, clear errors, restore the controls, and render `CommissionQuoteResult` using only the response data.
+6. **400:** preserve values, pass returned `fieldErrors` to the Form, and display the returned `error.message` in the page-level alert.
+7. **401:** preserve values, restore the controls, and display the returned API-key `error.message` in the page-level alert.
+8. **503:** preserve values, restore the controls, and display the service-unavailable message in the page-level alert.
+9. **Request timeout:** abort the request, preserve values, restore the controls, and display the timeout message in the page-level alert.
+10. **500 or unrecognised caught error:** log with the correlation ID and replace the form content with `UnknownError`.
+11. **Frontend route `*`:** React Router renders `NotFound`; this is separate from an API `404` response.
+12. **API 404:** preserve the form and display the returned `error.message` in the page-level alert; do not navigate to `NotFound`.
 
 - `AppHeader` and `AppFooter` remain visible for every state because they are outside the route switch.
 - A new submission clears the previous result and page-level alert before entering loading.
 - Do not render stale quote values after a new submission, API error, timeout, or unknown error.
+
+### Centralised frontend error handling
+
+- `CommissionQuotePage` is the single coordinator for every page-level error and `RequestState` transition.
+- `CommissionQuoteForm` owns only expected client field errors. It does not throw, map DTOs, log errors, classify errors, or select an error page.
+- `useConfig` returns `undefined` for unavailable or missing config. It does not throw or select an error page.
+- `mapCommissionQuoteRequest` returns `undefined` for an incomplete structural mapping. It does not throw, log, or select an error page.
+- `commissionQuoteApi.ts` is the transport boundary: Axios may reject, the service logs the transport outcome and rethrows the original narrowed Axios error.
+- One Page submission handler maps metadata, calls the API, catches the Axios rejection, and converts every outcome into `RequestState`.
+- Keep status/code classification out of render branches and child components. Use one Page-local request-error mapping function for timeout, `400`, `401`, API `404`, `500`, `503`, network failures, malformed error responses, and unrecognised errors.
+- Expected recoverable failures become `serviceError`; mapping failures, `500`, malformed responses, network failures, and unrecognised errors become `unknownError`.
+- Missing config is handled by the Page before rendering the Form. It records `CONFIG_NOT_FOUND` and renders the approved `UnknownError` component without entering request state because no submission occurred.
 
 ## 10. API error and timeout handling
 
@@ -979,7 +1006,9 @@ State transitions:
 
 ### Unexpected frontend error
 
-- `CommissionQuotePage` must catch errors from the API submission flow.
+- `CommissionQuotePage` is the single error coordinator for mapping and API submission.
+- A mapping result of `undefined` enters `unknownError` without throwing.
+- `CommissionQuotePage` must catch errors from the API submission flow in one request boundary.
 - Any caught error without a confirmed `400`, `401`, `500`, `503`, or timeout mapping must render `UnknownError`.
 - `UnknownError` displays **Something went wrong.**, then **Please contact your administrator.**, then the smaller **Correlation ID: {correlationId}** text.
 - Use the current request correlation ID; if none exists, generate one with `crypto.randomUUID()`.
@@ -1149,9 +1178,9 @@ code/backend/
 - After validation, convert once with `loanAmountCents = Math.round(loanAmount * 100)` and perform commission rounding in integer cents. Convert cents back to AUD numbers only when creating the response DTO.
 - The API is authoritative. Calling it directly from Postman applies the same required-field and business validation as the UI flow.
 - Both validation layers return `400 VALIDATION_ERROR` with user-readable `fieldErrors` keyed by DTO field name.
-- Do not return raw Zod messages. Map missing fields to their approved `requiredErrorMessage` and other invalid values to their approved `validation.errorMessage` from the Functional Spec/form config.
+- Do not return raw Zod messages. Map missing fields to their approved required messages and other invalid API values to their approved validation messages from the Functional Spec. Input validation messages are also stored in form config.
 - Every `400` uses the top-level message `Check the loan details and try again.`; malformed JSON may omit `fieldErrors`.
-- Schema and business validation must match `openapi.yaml`, Functional Spec, and frontend rules.
+- API schema and business validation must match `openapi.yaml` and Functional Spec. The frontend Select remains constrained to its configured enum options and therefore needs only required validation.
 
 ### Middleware and service order
 

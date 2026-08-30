@@ -150,6 +150,15 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 
 **Goal:** Implement the typed, config-driven frontend data layer without rendering the business page.
 
+**Required sources for this ticket:**
+
+- Technical Spec is the implementation authority for the exact schema contracts, file structure, config and Context flow, `useConfig` behaviour, validator signature, mapper signature, Axios service, correlation, and logging.
+- Functional Spec supplies the approved field values, labels, options, validation rules, and user-facing messages. It does not define the frontend architecture.
+- OpenAPI supplies the authoritative request, response, error DTO, header, and endpoint contract.
+- Code Quality Instructions apply to every generated TypeScript file.
+
+Read all four sources before editing. Do not implement CQ-005 from Functional Spec alone.
+
 **Create or modify:**
 
 - Every approved file under `code/frontend/src/schemas/`.
@@ -202,7 +211,7 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 - Give every field its own Grid item and apply config width.
 - Store one `{ name, value }` entry per config field in the form reducer.
 - Validate a field first on blur, then on change after it has been touched and invalid.
-- On submit, validate all fields before mapping the request.
+- On submit, validate all fields and pass the validated metadata list to the Page; do not map or classify errors in the Form.
 - Keep the untouched form button enabled; disable it when known errors exist or the request is loading.
 - Do not call the API from a field or from `CommissionQuoteForm`.
 
@@ -211,7 +220,7 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 - One Input implementation renders both numeric input fields.
 - Required and invalid messages appear at the approved field location.
 - Correcting all known errors re-enables submission.
-- Form submission emits only a valid `CommissionQuoteRequest`.
+- Form submission emits only a metadata list that passed client validation.
 - Frontend type check, lint, and format check pass.
 
 **Stop for review:** reusable component APIs, config-driven rendering, reducer behaviour, blur/change validation, and submit boundary.
@@ -233,6 +242,7 @@ If a required decision is missing or artifacts conflict, stop. Do not invent a s
 **Implementation:**
 
 - Own API submission and `RequestState` in `CommissionQuotePage`.
+- Map validated form metadata in the Page. Treat an `undefined` mapping result as `unknownError` without throwing or calling the API.
 - Generate one UUID per request and preserve it through request, logs, response, and displayed system errors.
 - Render success values only from the response; never recalculate them in the UI.
 - Map `400`, `401`, API `404`, `503`, timeout, `500`, and unknown failures exactly as Technical Spec states.

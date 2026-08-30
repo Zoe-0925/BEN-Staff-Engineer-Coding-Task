@@ -180,10 +180,7 @@ components:
         commissionRate:
           type: number
           format: double
-          enum:
-            - 0.001
-            - 0.002
-            - 0.003
+          description: Commission rate returned by the API as a decimal value.
         upfrontCommission:
           type: number
           format: double

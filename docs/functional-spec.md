@@ -61,10 +61,11 @@ Status: Ready for implementation
 - Required: yes.
 - Accepted values: `LOW`, `MEDIUM`, `HIGH`.
 - Missing: `Please select a risk band.`
-- Invalid: `Please select a valid risk band.`
+- The frontend Select exposes only the three accepted values and performs required validation only.
+- An invalid enum value sent directly to the API returns: `Please select a valid risk band.`
 
-- Frontend validation provides immediate feedback and prevents an invalid submission.
-- API validation applies the same rules and is authoritative.
+- Frontend validation provides immediate feedback and prevents an invalid form submission.
+- API validation remains authoritative and independently enforces the request DTO and enum contract.
 
 ## Data contract
 
@@ -100,11 +101,13 @@ totalCommissionCents = upfrontCommissionCents + (monthlyTrailCommissionCents × 
 
 ```text
 quoteId: UUID string
-commissionRate: number, 0.001 | 0.002 | 0.003
+commissionRate: number returned by the API as a decimal value
 upfrontCommission: number in AUD, rounded to 2 decimal places
 monthlyTrailCommission: number in AUD, rounded to 2 decimal places
 totalCommission: number in AUD, rounded to 2 decimal places
 ```
+
+- The API owns the valid commission-rate values. The frontend formats the returned number and does not duplicate the API's current rate set.
 
 ### Error DTO: Express to React
 
