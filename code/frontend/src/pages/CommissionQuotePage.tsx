@@ -54,7 +54,7 @@ function mapRequestError(error: unknown, correlationId: string): RequestState {
   }
 
   if (
-    status === undefined ||
+    !status ||
     !responseError ||
     responseError.code !== EXPECTED_ERROR_CODES[status] ||
     typeof responseError.message !== 'string'
